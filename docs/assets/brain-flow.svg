@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="870" viewBox="0 0 1200 870" role="img" aria-labelledby="title desc" lang="en">
+<title id="title">Companion brain: semantic memory, episodic memory, consolidation and emotion</title>
+<desc id="desc">A turn retrieves scoped evidence, facts, episodes and character state. The model replies, validates and commits. Cited consolidation derives episodes and core notes; bounded emotional state feeds the next turn. Relevance search uses RRF; recency is applied separately to open follow-up items.</desc>
+<rect width="1200" height="870" rx="18" fill="#f7f5ee" />
+<style>text{font-family:Arial,"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif}.tag{font-size:8px;letter-spacing:.65px}.title{font-size:14px;font-weight:600;fill:#2e3926}.sub{font-size:9.5px;fill:#59614d}</style>
+<text x="30" y="35" font-size="10" letter-spacing="2" fill="#805239">ANIMA LAB / THE BRAIN ATLAS</text>
+<text x="30" y="79" font-size="32" fill="#35422b">A moment becomes continuity.</text>
+<text x="30" y="108" font-size="13" fill="#57604c">Original evidence. Semantic facts. Episodic accounts. A character state that evolves.</text>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10" fill="#898e79" /></marker></defs>
+<g transform="translate(0,130)">
+<path d="M210 125H270" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
+<path d="M450 125H510" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
+<path d="M690 125H750" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
+<path d="M930 125H990" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
+<path d="M800 174V232H134V300" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
+<path d="M850 174V250H374V300" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
+<path d="M134 398V559H290" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
+<path d="M500 510V464H614V398" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
+<path d="M550 510V482H854V398" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
+<path d="M374 300V210H330V174" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
+<path d="M614 300V216H390V174" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
+<path d="M958 559H918V450H448V174" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
+<path d="M900 174V275H1090V510" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
+<path d="M134 300V198H300V174" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
+<path d="M854 300V198H420V174" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
+<rect x="30" y="76" width="180" height="98" rx="11" fill="#fffdf7" stroke="#b9b3a3" />
+<text x="46" y="99" class="tag" fill="#4c5343">INPUT</text>
+<text x="46" y="127" class="title" fill="#4c5343">A new message</text>
+<text x="46" y="152" class="sub" fill="#4c5343">Text · voice · image</text>
+<rect x="270" y="76" width="180" height="98" rx="11" fill="#fffdf7" stroke="#b9b3a3" />
+<text x="286" y="99" class="tag" fill="#4c5343">READ</text>
+<text x="286" y="127" class="title" fill="#4c5343">Build the context</text>
+<text x="286" y="152" class="sub" fill="#4c5343">Sources + facts + state</text>
+<rect x="510" y="76" width="180" height="98" rx="11" fill="#fffdf7" stroke="#b9b3a3" />
+<text x="526" y="99" class="tag" fill="#4c5343">GENERATE</text>
+<text x="526" y="127" class="title" fill="#4c5343">Reply model</text>
+<text x="526" y="152" class="sub" fill="#4c5343">Response + proposals</text>
+<rect x="750" y="76" width="180" height="98" rx="11" fill="#fffdf7" stroke="#b9b3a3" />
+<text x="766" y="99" class="tag" fill="#4c5343">WRITE</text>
+<text x="766" y="127" class="title" fill="#4c5343">Validate &amp; commit</text>
+<text x="766" y="152" class="sub" fill="#4c5343">Quotes · policy · revisions</text>
+<rect x="990" y="76" width="180" height="98" rx="11" fill="#fffdf7" stroke="#b9b3a3" />
+<text x="1006" y="99" class="tag" fill="#4c5343">DELIVER</text>
+<text x="1006" y="127" class="title" fill="#4c5343">Back to the person</text>
+<text x="1006" y="152" class="sub" fill="#4c5343">Text · speech · video</text>
+<rect x="30" y="300" width="208" height="98" rx="11" fill="#f0f2e8" stroke="#a5af91" />
+<text x="46" y="323" class="tag" fill="#44573c">SOURCE OF RECORD</text>
+<text x="46" y="351" class="title" fill="#44573c">Original evidence</text>
+<text x="46" y="376" class="sub" fill="#44573c">Who said what, and when</text>
+<rect x="270" y="300" width="208" height="98" rx="11" fill="#f0f2e8" stroke="#a5af91" />
+<text x="286" y="323" class="tag" fill="#44573c">WHAT IS KNOWN</text>
+<text x="286" y="351" class="title" fill="#44573c">Semantic memory</text>
+<text x="286" y="376" class="sub" fill="#44573c">Facts · preferences · boundaries</text>
+<rect x="510" y="300" width="208" height="98" rx="11" fill="#f0f2e8" stroke="#a5af91" />
+<text x="526" y="323" class="tag" fill="#44573c">WHAT HAPPENED</text>
+<text x="526" y="351" class="title" fill="#44573c">Episodic memory</text>
+<text x="526" y="376" class="sub" fill="#44573c">Cited accounts of shared events</text>
+<rect x="750" y="300" width="208" height="98" rx="11" fill="#f0f2e8" stroke="#a5af91" />
+<text x="766" y="323" class="tag" fill="#44573c">COMPACT CONTEXT</text>
+<text x="766" y="351" class="title" fill="#44573c">Core notebook</text>
+<text x="766" y="376" class="sub" fill="#44573c">Merged, cited continuity</text>
+<rect x="958" y="510" width="212" height="98" rx="11" fill="#f8eee5" stroke="#c0a28e" />
+<text x="974" y="533" class="tag" fill="#895335">CHARACTER</text>
+<text x="974" y="561" class="title" fill="#895335">Emotional state</text>
+<text x="974" y="586" class="sub" fill="#895335">PAD + relationship axes</text>
+<rect x="290" y="510" width="420" height="98" rx="11" fill="#f0f2e8" stroke="#a5af91" />
+<text x="306" y="533" class="tag" fill="#44573c">MAINTENANCE</text>
+<text x="306" y="561" class="title" fill="#44573c">Consolidation cycle</text>
+<text x="306" y="586" class="sub" fill="#44573c">Summarize · cite · index · refresh</text>
+<text x="30" y="45" font-size="9" letter-spacing="1.4" fill="#626953">THE CONVERSATION</text>
+<text x="30" y="278" font-size="9" letter-spacing="1.4" fill="#626953">MEMORY / EVERY DERIVED RECORD KEEPS ITS SOURCES</text>
+<text x="30" y="489" font-size="9" letter-spacing="1.4" fill="#626953">CONTINUITY LOOPS</text>
+</g><path d="M30 795H1170" stroke="#d5d1c2" />
+<text x="30" y="822" font-size="12" fill="#4b5740">Relevance: Σ 1/(60 + rank). Open-loop priority: importance × (1 + arousal) × age decay + date urgency.</text>
+<text x="30" y="847" font-size="11" fill="#626953">Explore four interactive views for exact formulas, cited consolidation and PAD / relationship decay. Optional features depend on configuration.</text></svg>

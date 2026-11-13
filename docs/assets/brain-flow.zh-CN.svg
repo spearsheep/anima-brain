@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="870" viewBox="0 0 1200 870" role="img" aria-labelledby="title desc" lang="zh-CN">
+<title id="title">陪伴引擎：语义记忆、情景记忆、记忆巩固与情绪状态</title>
+<desc id="desc">每轮在用户与角色范围内检索原文、事实、经历和状态，生成回复后校验并提交。记忆巩固生成带引用的情景摘要与核心笔记；有边界的情绪更新进入下一轮。相关性通过 RRF 融合，时效性则单独用于待跟进事项。</desc>
+<rect width="1200" height="870" rx="18" fill="#f7f5ee" />
+<style>text{font-family:Arial,"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif}.tag{font-size:8px;letter-spacing:.65px}.title{font-size:14px;font-weight:600;fill:#2e3926}.sub{font-size:9.5px;fill:#59614d}.tag{font-size:9px}.title{font-size:15px}.sub{font-size:11px}</style>
+<text x="30" y="35" font-size="10" letter-spacing="2" fill="#805239">ANIMA LAB / 陪伴引擎架构</text>
+<text x="30" y="79" font-size="32" fill="#35422b">每一次交流，都接得上以后。</text>
+<text x="30" y="108" font-size="13" fill="#57604c">保留对话原文，区分事实与经历，让角色状态随互动自然延续。</text>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10" fill="#898e79" /></marker></defs>
+<g transform="translate(0,130)">
+<path d="M210 125H270" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
+<path d="M450 125H510" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
+<path d="M690 125H750" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
+<path d="M930 125H990" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
+<path d="M800 174V232H134V300" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
+<path d="M850 174V250H374V300" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
+<path d="M134 398V559H290" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
+<path d="M500 510V464H614V398" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
+<path d="M550 510V482H854V398" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
+<path d="M374 300V210H330V174" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
+<path d="M614 300V216H390V174" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
+<path d="M958 559H918V450H448V174" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
+<path d="M900 174V275H1090V510" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
+<path d="M134 300V198H300V174" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
+<path d="M854 300V198H420V174" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
+<rect x="30" y="76" width="180" height="98" rx="11" fill="#fffdf7" stroke="#b9b3a3" />
+<text x="46" y="99" class="tag" fill="#4c5343">输入</text>
+<text x="46" y="127" class="title" fill="#4c5343">收到新消息</text>
+<text x="46" y="152" class="sub" fill="#4c5343">文字 · 语音 · 图片</text>
+<rect x="270" y="76" width="180" height="98" rx="11" fill="#fffdf7" stroke="#b9b3a3" />
+<text x="286" y="99" class="tag" fill="#4c5343">读取</text>
+<text x="286" y="127" class="title" fill="#4c5343">组装上下文</text>
+<text x="286" y="152" class="sub" fill="#4c5343">原文 + 事实 + 角色状态</text>
+<rect x="510" y="76" width="180" height="98" rx="11" fill="#fffdf7" stroke="#b9b3a3" />
+<text x="526" y="99" class="tag" fill="#4c5343">生成</text>
+<text x="526" y="127" class="title" fill="#4c5343">模型生成回复</text>
+<text x="526" y="152" class="sub" fill="#4c5343">回复 + 待校验的更新</text>
+<rect x="750" y="76" width="180" height="98" rx="11" fill="#fffdf7" stroke="#b9b3a3" />
+<text x="766" y="99" class="tag" fill="#4c5343">写入</text>
+<text x="766" y="127" class="title" fill="#4c5343">校验并提交</text>
+<text x="766" y="152" class="sub" fill="#4c5343">引用 · 写入策略 · 版本</text>
+<rect x="990" y="76" width="180" height="98" rx="11" fill="#fffdf7" stroke="#b9b3a3" />
+<text x="1006" y="99" class="tag" fill="#4c5343">送达</text>
+<text x="1006" y="127" class="title" fill="#4c5343">把回复交给用户</text>
+<text x="1006" y="152" class="sub" fill="#4c5343">文字 · 语音 · 视频</text>
+<rect x="30" y="300" width="208" height="98" rx="11" fill="#f0f2e8" stroke="#a5af91" />
+<text x="46" y="323" class="tag" fill="#44573c">可追溯的来源</text>
+<text x="46" y="351" class="title" fill="#44573c">原始对话</text>
+<text x="46" y="376" class="sub" fill="#44573c">谁在何时说了什么</text>
+<rect x="270" y="300" width="208" height="98" rx="11" fill="#f0f2e8" stroke="#a5af91" />
+<text x="286" y="323" class="tag" fill="#44573c">目前知道什么</text>
+<text x="286" y="351" class="title" fill="#44573c">语义记忆</text>
+<text x="286" y="376" class="sub" fill="#44573c">事实 · 偏好 · 边界</text>
+<rect x="510" y="300" width="208" height="98" rx="11" fill="#f0f2e8" stroke="#a5af91" />
+<text x="526" y="323" class="tag" fill="#44573c">一起经历过什么</text>
+<text x="526" y="351" class="title" fill="#44573c">情景记忆</text>
+<text x="526" y="376" class="sub" fill="#44573c">带原文引用的共同经历</text>
+<rect x="750" y="300" width="208" height="98" rx="11" fill="#f0f2e8" stroke="#a5af91" />
+<text x="766" y="323" class="tag" fill="#44573c">精简上下文</text>
+<text x="766" y="351" class="title" fill="#44573c">核心笔记</text>
+<text x="766" y="376" class="sub" fill="#44573c">整合当前信息，保留来源</text>
+<rect x="958" y="510" width="212" height="98" rx="11" fill="#f8eee5" stroke="#c0a28e" />
+<text x="974" y="533" class="tag" fill="#895335">角色连续性</text>
+<text x="974" y="561" class="title" fill="#895335">角色的情绪状态</text>
+<text x="974" y="586" class="sub" fill="#895335">PAD + 关系维度</text>
+<rect x="290" y="510" width="420" height="98" rx="11" fill="#f0f2e8" stroke="#a5af91" />
+<text x="306" y="533" class="tag" fill="#44573c">维护</text>
+<text x="306" y="561" class="title" fill="#44573c">记忆巩固循环</text>
+<text x="306" y="586" class="sub" fill="#44573c">整理摘要 · 保留引用 · 建索引 · 随变化刷新</text>
+<text x="30" y="45" font-size="9" letter-spacing="1.4" fill="#626953">一轮对话的路径</text>
+<text x="30" y="278" font-size="9" letter-spacing="1.4" fill="#626953">记忆层 / 每条派生记录都保留来源</text>
+<text x="30" y="489" font-size="9" letter-spacing="1.4" fill="#626953">让下一轮接得上这一轮</text>
+</g><path d="M30 795H1170" stroke="#d5d1c2" />
+<text x="30" y="822" font-size="12" fill="#4b5740">相关性：Σ 1/(60 + rank)。待跟进优先级：重要性 × (1 + 唤醒度) × 时间衰减 + 日期紧迫性。</text>
+<text x="30" y="847" font-size="11" fill="#626953">交互页包含四个视图，可查看完整公式、带引用的记忆巩固，以及 PAD 与关系的衰减规则。可选能力需按配置启用。</text></svg>

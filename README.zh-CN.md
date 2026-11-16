@@ -237,3 +237,7 @@ companion --db ./output/host/brain.sqlite3 host-package ./output/hosts
 本地存储也不等于本地推理：配置远程模型后，相应上下文会发送给该服务。`user_id` 用于数据隔离，不是登录或鉴权机制；部署前请阅读[安全说明](SECURITY.md)。
 
 代码采用 [MIT 许可证](LICENSE)。Anima 品牌标识与角色图片适用单独的[素材使用说明](docs/assets/README.md)，也不是运行 SDK 的必要依赖。
+
+## 作者
+
+Anima Brain 由 [Jun Yu Chen（@spearsheep）](https://github.com/spearsheep) 和 [@kayllla](https://github.com/kayllla) 共同开发。

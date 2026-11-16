@@ -6,6 +6,7 @@ build-backend = "hatchling.build"
 name = "companion-engine"
 version = "0.6.0"
 description = "Anima Brain: local-first memory and emotional continuity for AI companions"
+authors = [{ name = "Jun Yu Chen" }, { name = "kayllla" }]
 license = "MIT"
 license-files = ["LICENSE", "THIRD_PARTY_NOTICES.md"]
 classifiers = [

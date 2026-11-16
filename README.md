@@ -244,3 +244,8 @@ Owner IDs are namespaces, not authentication. Read [Security](SECURITY.md) befor
 
 Code is [MIT licensed](LICENSE). Anima branding and character artwork have separate
 [asset terms](docs/assets/README.md); they are not runtime dependencies.
+
+## Authors
+
+Anima Brain is built by [Jun Yu Chen (@spearsheep)](https://github.com/spearsheep) and
+[@kayllla](https://github.com/kayllla).

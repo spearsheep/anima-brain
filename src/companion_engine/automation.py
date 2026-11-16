@@ -20,6 +20,9 @@ from .models import Model
 class MemoryAutomation(Model):
     embedding: bool = False
     summaries: bool = False
+    reconcile: bool = False
+    summary_batch_messages: int = Field(default=20, ge=2, le=60, strict=True)
+    retain_recent_turns: int = Field(default=0, ge=0, le=30, strict=True)
     host_summaries: bool = False
     semantic_retrieval: bool = False
     summary_turns: int = Field(default=4, ge=1, le=100)
@@ -71,7 +74,11 @@ class Automation:
                 "SELECT config FROM memory_automation WHERE owner=? AND character_id=?",
                 (self.engine.owner, character_id),
             ).fetchone()
-            return MemoryAutomation.model_validate_json(row[0]) if row else default_policy()
+            return (
+                MemoryAutomation.model_validate_json(row[0])
+                if row
+                else self.runtime.default_automation or default_policy()
+            )
 
     def configure(self, character_id, policy):
         policy = MemoryAutomation.model_validate(policy)
@@ -107,7 +114,7 @@ class Automation:
             summary_ready = hasattr(self.runtime._provider, "structured")
         else:
             summary_ready = bool(s.base_url and s.model)
-        if policy.summaries and not summary_ready:
+        if (policy.summaries or policy.reconcile) and not summary_ready:
             issues.append("summary_provider_missing")
         return issues
 
@@ -132,8 +139,9 @@ class Automation:
                 else ""
             )
             indexed = self.engine.db.execute(
-                "SELECT count(*) FROM vectors v JOIN evidence e ON e.id=v.evidence_id "
-                "WHERE e.owner=? AND e.character_id=? AND v.model=?",
+                "SELECT count(DISTINCT c.evidence_id) FROM evidence_embeddings v "
+                "JOIN evidence_chunks c ON c.id=v.chunk_id JOIN evidence e ON e.id=c.evidence_id "
+                "WHERE e.owner=? AND e.character_id=? AND v.model=? AND v.lane='raw'",
                 (self.engine.owner, character_id, namespace),
             ).fetchone()[0]
             spec = json.loads(self.engine._character(character_id)["spec"])
@@ -198,7 +206,7 @@ class Automation:
                 p = (
                     MemoryAutomation.model_validate_json(row["config"])
                     if row["config"]
-                    else default_policy()
+                    else self.runtime.default_automation or default_policy()
                 )
                 if json.loads(row["spec"])["memory_policy"] == "off":
                     continue
@@ -218,16 +226,34 @@ class Automation:
                 issues = self.availability(p)
                 backlog = self.backlog(cid)
                 kind = None
-                if p.summaries and "summary_provider_missing" not in issues and backlog["excerpts"]:
+                if (
+                    p.reconcile
+                    and "summary_provider_missing" not in issues
+                    and self.engine.knowledge.pending(cid)
+                ):
+                    kind = "reconcile"
+                dirty = self.engine.db.execute(
+                    "SELECT 1 FROM knowledge_updates WHERE owner=? AND character_id=? "
+                    "AND processed=0 LIMIT 1",
+                    (self.engine.owner, cid),
+                ).fetchone()
+                if (
+                    not kind
+                    and p.summaries
+                    and "summary_provider_missing" not in issues
+                    and (backlog["excerpts"] or dirty)
+                ):
                     if (
-                        backlog["turns"] >= p.summary_turns
+                        dirty
+                        or backlog["turns"] >= p.summary_turns
                         or backlog["chars"] >= p.summary_chars
                         or now - backlog["latest"] >= p.idle_seconds
                     ):
-                        kind = "maintenance"
+                        if self.engine.memory.maintenance_sources(cid, p):
+                            kind = "maintenance"
                 if not kind and p.embedding and "embedding_provider_missing" not in issues:
                     embed = Embeddings(self.runtime.settings, self.runtime.transport)
-                    if self.engine.memory.embedding_candidates(
+                    if self.engine.evidence_index.candidates(
                         cid, embed.namespace, limit=1
                     ) or self.engine.retrieval.candidates(cid, embed.namespace, limit=1):
                         kind = "index"
@@ -258,8 +284,16 @@ class Automation:
         thread.start()
         state, error = "succeeded", None
         try:
-            method = self.runtime.maintain if job["kind"] == "maintenance" else self.runtime.index
-            method(job["character_id"], "auto-" + job["id"])
+            method = {
+                "maintenance": self.runtime.maintain,
+                "index": self.runtime.index,
+                "reconcile": self.runtime.reconcile,
+            }[job["kind"]]
+            method(
+                job["character_id"],
+                "auto-" + job["id"],
+                **({"flush": False} if job["kind"] == "maintenance" else {}),
+            )
         except Exception:
             # Never expose provider response text/credentials through the status UI.
             state, error = "review", "provider_or_validation_failed_outcome_unknown"

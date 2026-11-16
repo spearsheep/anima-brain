@@ -152,7 +152,9 @@ and a new ID for each new message. Synchronous applications can use `chat_sync()
 `Settings` selects providers and model limits. `BrainConfig` controls memory retrieval,
 recent history, context budgets and response instructions. Character settings control
 memory writes and relationship behavior. Creating a character makes no model or
-image-generation call; optional SDK embedding and summary jobs start off.
+image-generation call. New SDK characters enable provider-configured indexing, reconciliation
+and summaries; explicit existing off policies stay off. These jobs use additional model calls.
+See [memory architecture and defaults](docs/memory-parity.md).
 
 → [SDK guide](docs/sdk.md) · [Memory, vision and media arguments](docs/sdk-capabilities.md)
 

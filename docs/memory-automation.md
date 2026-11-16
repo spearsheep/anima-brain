@@ -8,21 +8,23 @@ or of automatic access to a ChatGPT conversation.
 1. The host calls `prepare_turn` and `commit_turn` with the actual exchange. The commit saves
    original evidence and quoted fact proposals atomically. `automatic` permits host-authored
    fact extraction; it does not intercept messages or force the host to call a tool.
-2. Committed evidence without a vector or maintenance marker is the durable backlog. There
-   is no vulnerable commit-then-enqueue gap. Notes invalidate stale vectors.
+2. Committed evidence without a vector/maintenance marker and unreviewed fact revisions are
+   the durable backlog. There is no commit-then-enqueue gap. Notes invalidate only note vectors.
 3. A policy-controlled worker claims one maintenance job per character across local processes.
    `companion http` and `companion serve` start it; SDK users use
    `with runtime.automation.worker(): ...`, or run `companion --db PATH worker`.
-4. Embedding handles up to 32 excerpts per job. Summary maintenance handles at most eight
-   excerpts (normally four turns), creates grounded notes and cited episode/core documents.
-   It runs when pending turns reach the configured threshold, pending text reaches 12,000
-   characters, or the newest pending evidence is idle for 300 seconds. Batch bounds remain
-   fixed even with a larger threshold. Old evidence is retained. Current fact revisions
-   override old sources, and a concurrent fact edit invalidates the in-flight summary.
-5. Optional semantic retrieval enriches `prepare_turn` using lexical + cosine reciprocal
-   rank fusion. Query embeddings are journaled per turn and model namespace. Replaying a
-   pending turn does not rebill its query. Provider failure returns explicit lexical fallback.
-   The existing bounded reader may perform additional targeted searches when configured.
+4. Index jobs handle up to 32 contextual chunk/lane or derived items. Background maintenance
+   handles up to 20 original messages by default (2–60 configurable). It creates grounded notes,
+   may clarify two linked older notes, and writes episodes, a structured notebook and optional
+   character core. SDK defaults keep 10 recent exchanges until idle; direct `maintain()` flushes.
+5. Reconciliation pages through older candidate facts for each new current-state/correction
+   fact. Exact quotations, later observation and revision checks gate explicit transitions.
+   Superseded facts remain historical; corrected errors are excluded. Invalidation forces core
+   repair, including when there is no unprocessed chat backlog.
+6. Original evidence uses raw/note/lexical RRF k=40. Facts and episodes use weighted relevance,
+   recency and importance. The bounded reader can search again or perform typed temporal lookup.
+   Query embeddings are journaled; failure is an explicit lexical fallback. Details and the
+   original-source mapping are in [memory architecture alignment](memory-parity.md).
 
 ## Configuration
 
@@ -45,8 +47,9 @@ after authorizing provider use:
 }
 ```
 
-For characters without an explicit policy, embedding, semantic retrieval and host summaries
-default on; paid background summaries default off. Existing explicit off settings remain off.
+For raw Runtime/MCP characters without an explicit policy, embeddings, semantic retrieval and
+host summaries default on. New SDK characters instead use background summaries and
+reconciliation, with a configured writer. Existing explicit off settings remain off.
 Once an embedding provider is configured, indexing can process previously saved history and
 incur API fees. Host summaries require the active host to call the summary tools. Policies persist in the same SQLite database and are shared by MCP
 and SDK/API clients. Memory mode `off` pauses worker processing. Disabling a switch prevents new
@@ -54,12 +57,13 @@ jobs; it does not cancel a provider request already in flight.
 
 Provider settings stay in the existing private local provider configuration, never in MCP
 responses. Embedding uses its configured endpoint/model/key. Autonomous summaries need a
-separately configured chat/summary model; the ChatGPT subscription cannot run backend jobs.
+configured chat model or separate summary model; the ChatGPT subscription cannot run backend jobs.
 Missing configuration is reported and does not repeatedly attempt calls. Existing running
 processes need restart after provider configuration is saved from another process.
 
 The daily cap is a rolling 24-hour **job count**, not a dollar budget. One summary job may
-contain up to eight note calls plus one consolidation call. Chat/query-embedding and manual
+contain up to `summary_batch_messages` note calls, optional note-query embeddings and one
+consolidation call. A reconciliation job may call a semantic candidate search and a conflict writer. Chat/query-embedding and manual
 operations are separate. Usage is journaled; unavailable token prices are not treated as zero.
 
 ## Recovery and correctness
@@ -100,13 +104,16 @@ still SQLite-specific and migrating it requires implementation, not just an envi
 ## Summaries by ChatGPT / another MCP host
 
 The user can choose `configure_host_summaries(character_id, enabled=true)`. This enables
-`host_summaries` and disables paid background summaries, preserving all embedding settings.
+`host_summaries` and disables autonomous summaries/reconciliation, preserving embedding settings.
 Both summary writers cannot be enabled simultaneously. No backend reply-model key is needed.
 Prepare/commit responses include a due notice based on the same turn/text/idle thresholds.
 The host reads `prepare_memory_summary`, authors episode/core with supplied original citations,
 and calls `commit_memory_summary`. Snapshot checks reject changed facts/core/batches; exact
 retries are idempotent. Originals, summaries, completion markers and receipts remain local.
-The host can optionally add contextual retrieval notes using `annotate_evidence`.
+The host can author notes and linked updates with `prepare_note_evolution` /
+`commit_note_evolution`, and inspect/apply knowledge changes with
+`prepare_knowledge_reconciliation` / `commit_knowledge_reconciliation`. These make no backend
+LLM calls. `annotate_evidence` remains available for direct single-note edits.
 
 At most one bounded batch per conversational turn is recommended. This is a tool workflow,
 not a guarantee that every host will follow it. It runs only when the host is active and calls

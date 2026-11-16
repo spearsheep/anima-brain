@@ -30,7 +30,7 @@ config = BrainConfig(
         document_limit=8,  # cited core/episode documents
         context_chars=16000,
     ),
-    automation=MemoryAutomation(),  # paid background work off by default
+    automation=MemoryAutomation(),  # explicit opt-out of default background maintenance
     capture_context=False,
 )
 ```

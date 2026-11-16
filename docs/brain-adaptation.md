@@ -1,6 +1,12 @@
-# Brain adaptation — 0.4.0
+# Brain adaptation
 
-This release adapts the owner's `makima.io` memory/emotion implementation to a local,
+**Memory alignment update:** see [the current execution paths, defaults and source mapping](memory-parity.md).
+The sections below describe the original host adaptation; the alignment update adds contextual
+raw/note vectors, weighted archive retrieval, background cross-key reconciliation and old-note evolution.
+
+## Historical 0.4 host integration
+
+The original 0.4 release adapted the owner's `makima.io` memory/emotion implementation to a local,
 host-driven Python engine. It does not import Convex or copy Rina-specific personality,
 old Makima drift-scoring preferences, production credentials, or application billing.
 
@@ -35,9 +41,11 @@ knowledge-update markers; deleting a fact is not transcript erasure.
 5. Process due host summaries and missing-analysis receipts with the host model. Compile style
    changes when lasting feedback warrants them; update self-memory only when supported.
 
-This remains a cooperative host protocol. The backend cannot force ChatGPT to call a tool,
+Host mode remains a cooperative protocol. The backend cannot force ChatGPT to call a tool,
 see unrelated chats, or summarize while the host/computer is inactive. Background summary
-model calls remain disabled by default. Existing explicit automation-off choices are preserved.
+model calls remain disabled by default in this host-only mode. New standalone SDK characters
+enable configured background memory maintenance; see [current defaults](memory-parity.md#defaults-and-how-to-run-them).
+Existing explicit automation-off choices are preserved.
 
 ## New tools
 

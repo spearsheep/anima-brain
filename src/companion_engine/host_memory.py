@@ -137,14 +137,9 @@ class HostMemory:
             ],
             "knowledge_updates": updates,
             "current_facts": [
-                dict(r)
-                for r in db.execute(
-                    (
-                        "SELECT id,key,text,revision FROM memories WHERE owner=? AND "
-                        "character_id=? ORDER BY updated_at DESC,id LIMIT 100"
-                    ),
-                    (self.engine.owner, character_id),
-                )
+                m.model_dump(mode="json")
+                for m in self.engine.memories(character_id, limit=100)
+                if not m.lifecycle.invalidation
             ],
         }
         data["omitted_current_facts"] = max(

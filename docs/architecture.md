@@ -38,12 +38,13 @@ extra effects. Paid operations are reserved/journaled outside network calls and 
   model/human judgment; no perfect contradiction detection is claimed.
 - Contextual notes: <=600-character descriptions, eight keywords, three typed links. Exact quotes
   on both originals ground links, but do not prove semantic entailment.
-- English/CJK FTS5 and optional normalized cosine + reciprocal-rank fusion. Embeddings are
-  versioned by endpoint/model; note edits invalidate vectors. Exact scans stream a scoped cursor
-  with a bounded heap, not a distributed ANN index.
+- Raw contextual and note contextual embeddings are separate from facts/documents. Evidence
+  uses RRF k=40; archive facts/episodes use relevance + recency + importance. Note edits invalidate
+  only the note lane. Namespaced exact cosine scans retain bounded results, not an ANN index.
 - Expansion returns linked and neighboring originals, preserving attribution. Recall date filters
   mean observation time; fact/event validity is separate.
-- Explicit maintenance handles eight originals per batch: notes, then an atomic episode/core pair.
+- Background maintenance handles up to 20 originals per batch by default (configurable 2–60):
+  new/old note evolution, then an atomic episode/core notebook and optional character core.
   Processed markers differ from citations, so uncited acknowledgements do not loop forever.
   Core retains <=40 cited originals; old originals/episodes remain available. Existing core
   citations are re-presented as originals, not treated as proof by themselves.
@@ -81,11 +82,13 @@ core/episode/open-loop interfaces. Existing guidance draws on `innerThought.ts`/
 concepts. No private assets, research datasets or credentials were copied. Public Anima
 branding and character artwork appear only in repository documentation, not as SDK characters.
 
-Not a complete production port: no autonomous life/outreach, production scheduler, every historical
-import format, custom production reranking, fact-to-fact entity graph, exhaustive conflict
-resolution, hosted auth/billing or live call/avatar transports. Configured indexing runs under the persisted automation policy; host summary/style/self-memory
-writing still requires host tool execution. These are stated differences, not hidden parity claims.
-See [the 0.4 adaptation](brain-adaptation.md) for implemented lifecycle changes and test boundaries.
+Not a complete production port: autonomous life/outreach, the production cloud scheduler,
+some historical import formats, a fact-to-fact entity graph, exhaustive conflict resolution
+and hosted auth/billing remain outside this SDK. Optional live-call transports are documented
+separately in [live calls](live-calls.md). Configured indexing runs under the persisted automation
+policy. SDK summary and reconciliation workers use the configured writer; host-authored
+summary/style/self-memory workflows require host tool execution.
+See [memory architecture alignment](memory-parity.md) for executable paths, defaults and test boundaries.
 
 ## Provider and security boundaries
 
@@ -100,8 +103,9 @@ Image input accepts validated local files or bytes, not arbitrary remote URLs. A
 configured vision model produces uncertain observations for the text reader. Image generation
 exposes typed size, quality and count options; reference-image edits are explicit and require a
 compatible provider. Generated assets are stored locally. See [SDK capabilities](sdk-capabilities.md)
-for formats, limits and reference handling. Speech and transcription are explicit operations;
-voice input produces editable text, not a live call. Actual usage is logged when provided;
+for formats, limits and reference handling. One-shot speech and transcription are explicit
+operations; dictation produces editable text. Streaming calls use the separate call SDK.
+Actual usage is logged when provided;
 timeouts may still be billed. Missing prices are unknown, not zero; no hard budget cap.
 
 Loopback HTTP checks Host/Origin and bearer token, serves a strict CSP, and has one configured

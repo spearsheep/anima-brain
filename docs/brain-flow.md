@@ -53,22 +53,37 @@ A source-quote check establishes provenance, not semantic truth. Automatic, revi
 
 There is **no single “similarity + importance + recency” formula applied to all memories** in this SDK. The atlas exposes the actual separate paths.
 
-### Evidence and derived-memory relevance
+### Original evidence: contextual hybrid retrieval
 
-[`memory.py::recall`](../src/companion_engine/memory.py) searches original evidence; [`retrieval.py::search`](../src/companion_engine/retrieval.py) searches derived facts and documents. Each ranks its own pool:
-
-1. FTS5 returns lexical candidates ordered by BM25.
-2. Optional configured embeddings return candidates with positive cosine similarity. Vectors are normalized; the implementation computes their dot product. This is exact local vector search, not an ANN service.
-3. Each available channel contributes up to 60 candidates. Derived-memory search also includes a bounded CJK substring channel.
-4. Reciprocal rank fusion combines candidate ranks:
+[`evidence_index.py`](../src/companion_engine/evidence_index.py) embeds each source with
+speaker, observed time and its previous two messages, separately from a note-enhanced vector.
+[`memory.py::recall`](../src/companion_engine/memory.py) combines lexical top 60, contextual
+raw-vector top 32 and note-vector top 16 candidates:
 
 ```text
-RRF(item) = Σchannel 1 / (60 + rankchannel(item))
+RRF(source) = Σchannel 1 / (40 + rankchannel(source))
 ```
 
-Ranks start at 1. An item absent from a channel gets no contribution from it. An item ranked 1 by keywords and 4 by vectors scores `1/61 + 1/64 = 0.03202`. Without the vector match it scores `1/61 = 0.01639`. This is a ranking score, **not a probability**.
+Ranks start at 1. Keyword rank 1 and raw-vector rank 4 contribute `1/41 + 1/44 = 0.04712`.
+A note-vector match can contribute another vote. Up to six linked originals receive a bounded
+one-hop addition (`1/80`) from the first four seeds. This is ranking, not probability.
+There is no recency penalty on original evidence. Observation-date filtering is distinct
+from event dates and fact validity in [temporal lookup](../src/companion_engine/temporal.py).
 
-RRF has no age, importance or emotion multiplier. Original recall can filter **observation dates**, which are not event dates. Event dates and fact validity use separate [temporal lookup](../src/companion_engine/temporal.py).
+### Facts and episodes: archive ranking
+
+[`retrieval.py::search`](../src/companion_engine/retrieval.py) selects semantic/lexical archive
+candidates, then uses the original Anima weights:
+
+```text
+rank = 0.6 × relevance + 0.25 × exp(-age_days / 45) + 0.15 × importance / 10
+```
+
+Relevance is cosine similarity when available. Lexical-only hits use an explicitly labelled
+normalized lexical-rank proxy. Facts use the event date when known, otherwise their last
+reinforcement time. Episodes use the latest cited source time, not the date of re-summarization.
+Results include ranking components. Ineligible, corrected and superseded current facts are
+filtered; explicit historical lookups remain available.
 
 ### Open-loop priority: importance, arousal, age and date urgency
 
@@ -79,7 +94,7 @@ priority = I × (1 + A) × exp(−t / (14 + 30A)) + U
 
 I = importance, integer 1…10
 A = stored arousal, 0…1
- t = max(0, now − updated_at) / 86,400  [days]
+ t = max(0, now − last_reinforced_at) / 86,400  [days]
 U = 2 / (1 + |event_date − local_today|), if an event date exists
     0 otherwise
 ```
@@ -98,15 +113,15 @@ The interactive retrieval sliders calculate these formulas on illustrative input
 
 ## 3. Consolidation is a cycle, not a destructive compression step
 
-**Default policy for new/unconfigured companions:** host summaries and configured embedding/retrieval support are enabled. A host still has to perform the summary work; embedding needs a provider. Background model summaries are an explicit alternative, mutually exclusive with host summaries. These defaults are defined in [`automation.py::default_policy`](../src/companion_engine/automation.py).
+**SDK defaults:** configured embeddings, semantic retrieval, background reconciliation and
+summaries are enabled for new characters. Summary thresholds are 20 pending turns, 12k
+characters, 300 seconds idle, or a knowledge invalidation. Keep the newest 10 exchanges while
+chat is active; flush short conversations on idle. A batch handles at most 20 messages by default,
+configurable to 2–60. Manual `maintain()` flushes explicitly.
 
-With summary work enabled, the default due thresholds are:
-
-- 4 unprocessed committed turns; **or**
-- 12,000 characters in the unprocessed evidence; **or**
-- 300 seconds idle since the newest pending evidence.
-
-Host mode also treats unprocessed knowledge changes as a trigger. “Due” is a notice, not proof that work ran. An active host or running worker must act on it. Thresholds are configurable.
+**MCP host defaults:** host-written summaries and configured embeddings; no autonomous LLM
+writer unless enabled. Existing explicit off policies are preserved. A running worker or active
+host must perform the work. See [source mapping and defaults](memory-parity.md).
 
 ```mermaid
 flowchart LR
@@ -122,7 +137,7 @@ flowchart LR
     Invalidate --> Backlog
 ```
 
-Host summaries use `prepare_memory_summary` and `commit_memory_summary`. The host writes a batch episode and merged structured notebook, with a snapshot ID and cited source IDs. A changed snapshot must be reread. At most one host batch is requested per conversational turn. Background `maintain()` is a different bounded path, processing up to eight original excerpts per batch.
+Host summaries use `prepare_memory_summary` and `commit_memory_summary`. The host writes a batch episode and merged structured notebook, with a snapshot ID and cited source IDs. A changed snapshot must be reread. At most one host batch is requested per conversational turn. Background `maintain()` performs note evolution, structured user-notebook consolidation and optional separate character-core updates within the configured batch bounds.
 
 Both paths preserve the originals. Current core is replaced, episodes are added, and processed source markers prevent blindly repeating work. Character self-core is optional and separate from user knowledge. Notes and evidence links can improve retrieval; vectors are namespaced and invalidated when the corresponding content changes.
 

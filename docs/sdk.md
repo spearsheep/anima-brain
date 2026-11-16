@@ -77,13 +77,13 @@ brain = CompanionBrain(
 | `temperature` | `None` | Omit from request, allowing provider default; accepted values depend on provider |
 | `timeout_seconds` | 60 | HTTP timeout per provider operation, not a whole-conversation deadline |
 | `reader_enabled`, `reader_max_steps` | `True`, 2 | Up to two extra planning calls; 0 skips planning but still retrieves initial context |
-| `BrainConfig.recent_turns` | 6 | Maximum recent committed user/assistant pairs; these are complete exchanges, not messages |
+| `BrainConfig.recent_turns` | 10 | Maximum recent committed user/assistant pairs; these are complete exchanges, not messages |
 | `recent_chars` | 12000 | Maximum serialized recent-pair payload, trimmed oldest first |
 | `memory` | `MemoryConfig()` | Read switch, per-lane limits and 16000-character memory budget; see capability guide |
 | `context_chars` | 48000 | Serialized context budget; schema/system overhead is additional, not a token estimate |
 | `reply_instructions` | Conversational, brief soft targets | Application guidance layered under core grounding/boundary rules; empty string disables this addition |
 | `capture_context` | `False` | Save exact final `TurnContext` data and return it for debugging; contains private content |
-| `automation` | All optional jobs off | `MemoryAutomation` policy applied only to newly created SDK characters |
+| `automation` | Background memory maintenance enabled | Configured indexing, semantic retrieval, reconciliation and summaries; existing explicit policies are preserved |
 | `start_worker` | `True` | Service existing explicitly enabled automation policies while brain is open |
 
 Character configuration is separate: persona, automatic/review/off memory, fictional
@@ -114,14 +114,15 @@ flowchart LR
     G --> J[Typed reply + diagnostics]
 ```
 
-Memory starts with SQLite FTS retrieval and source-backed facts; no separate embedding
-model is required. Automatic facts and attunement share the reply call. Long histories
-remain stored but are not all sent to the model. For vector retrieval/indexing, configure
-the embedding endpoint and explicitly enable `MemoryAutomation(embedding=True,
-semantic_retrieval=True)` at creation or `brain.configure_automation(...)` later.
-Backend summaries also need explicit `summaries=True`; `summary_base_url/model/key` optionally select a separate provider; `host_summaries` requires an MCP
-host to author them and is not a standalone summary generator. These optional operations
-use additional provider calls. See [maintenance](memory-automation.md).
+Memory retains source-backed facts, contextual raw/note vectors, episodes and a structured
+core notebook. Fact proposals and attunement share the reply call. New SDK characters enable
+provider-configured indexing, semantic retrieval, background reconciliation and summaries;
+these add model calls while the worker is active. Configure an embedding provider for vectors.
+`summary_base_url/model/key` optionally select a separate writer; otherwise the reply provider
+is used, with `memory_max_output_tokens` (8192 by default). Explicit existing off policies stay
+off. Set `automation=MemoryAutomation()` for an intentionally manual setup. Host summaries
+require an active MCP host and are not a standalone writer. See [memory architecture,
+defaults and migration](memory-parity.md) and [maintenance](memory-automation.md).
 
 ## Inspect the result
 

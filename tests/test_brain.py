@@ -62,7 +62,7 @@ def test_chat_restart_recall_replay_and_owner_isolation(tmp_path):
         assert reply.context is None
         assert reply.usage.estimated_usd is None
         assert reply.usage.missing_token_reports == 1
-        assert not app.runtime.automation.policy("mika").embedding
+        assert app.runtime.automation.policy("mika").embedding
         assert not app.runtime.automation.policy("mika").host_summaries
     with brain(path, model, user_id="alice") as app:
         reply = asyncio.run(app.chat("mika", "What do I drink?", request_id="second"))
@@ -235,7 +235,7 @@ def test_http_shares_sdk_defaults_and_response_flow(tmp_path):
                 },
             )
             assert result.status_code == 200
-            assert not app.runtime.automation.policy("mika").embedding
+            assert app.runtime.automation.policy("mika").embedding
             assert not app.runtime.automation.policy("mika").host_summaries
             result = client.post(
                 "/api/chat",

@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="870" viewBox="0 0 1200 870" role="img" aria-labelledby="title desc" lang="zh-CN">
 <title id="title">陪伴引擎：语义记忆、情景记忆、记忆巩固与情绪状态</title>
-<desc id="desc">每轮在用户与角色范围内检索原文、事实、经历和状态，生成回复后校验并提交。记忆巩固生成带引用的情景摘要与核心笔记；有边界的情绪更新进入下一轮。相关性通过 RRF 融合，时效性则单独用于待跟进事项。</desc>
+<desc id="desc">每轮检索原始证据、事实、经历和角色状态；回复后更新记忆并保留来源。原文用 RRF 融合，事实与经历考虑相关性、时间衰减和重要性。</desc>
 <rect width="1200" height="870" rx="18" fill="#f7f5ee" />
 <style>text{font-family:Arial,"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif}.tag{font-size:8px;letter-spacing:.65px}.title{font-size:14px;font-weight:600;fill:#2e3926}.sub{font-size:9.5px;fill:#59614d}.tag{font-size:9px}.title{font-size:15px}.sub{font-size:11px}</style>
 <text x="30" y="35" font-size="10" letter-spacing="2" fill="#805239">ANIMA LAB / 陪伴引擎架构</text>
@@ -71,5 +71,5 @@
 <text x="30" y="278" font-size="9" letter-spacing="1.4" fill="#626953">记忆层 / 每条派生记录都保留来源</text>
 <text x="30" y="489" font-size="9" letter-spacing="1.4" fill="#626953">让下一轮接得上这一轮</text>
 </g><path d="M30 795H1170" stroke="#d5d1c2" />
-<text x="30" y="822" font-size="12" fill="#4b5740">相关性：Σ 1/(60 + rank)。待跟进优先级：重要性 × (1 + 唤醒度) × 时间衰减 + 日期紧迫性。</text>
+<text x="30" y="822" font-size="12" fill="#4b5740">原文：Σ 1/(40+排名)　事实与经历：0.6×相关性＋0.25×时效＋0.15×重要性　待跟进：唤醒度与日期紧迫性</text>
 <text x="30" y="847" font-size="11" fill="#626953">交互页包含四个视图，可查看完整公式、带引用的记忆巩固，以及 PAD 与关系的衰减规则。可选能力需按配置启用。</text></svg>

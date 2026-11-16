@@ -42,7 +42,10 @@ For every companion turn submit grounded attunement and, when relationship_enabl
 appraisal (neutral zero changes are valid). Compare current facts and commit explicit corrections.
 Do not promise automatic capture of all ChatGPT messages.
 For changed facts use review_memory_update, including older semantic matches.
-Similarity is not proof.
+Similarity is not proof. After committing new facts, inspect_continuity_tasks; when knowledge
+reconciliation is pending, prepare_knowledge_reconciliation then commit_knowledge_reconciliation
+with your own grounded judgment. For clarified notes use prepare_note_evolution then
+commit_note_evolution. These host workflows require no backend LLM key.
 Use lookup_memory_time for events versus observation dates and unknown validity boundaries.
 Process missing analysis with inspect_continuity_tasks/complete_turn_analysis using original turns.
 Compile lasting style via update_response_style, citing current style/boundary memory revisions.
@@ -60,8 +63,10 @@ settings page on the engine computer; secrets are never entered in the embedded 
 
 
 def create_server(engine: Engine, runtime=None) -> MCPServer:
+    from .knowledge import Transitions
     from .media import Media
     from .memory import Note
+    from .note_evolution import NoteEvolution
     from .plugin_support import PLAYER_URI, player_html, voice_card, voice_chunk, workflow
     from .runtime import Runtime
 
@@ -117,6 +122,7 @@ def create_server(engine: Engine, runtime=None) -> MCPServer:
         policy["host_summaries"] = enabled
         if enabled:
             policy["summaries"] = False
+            policy["reconcile"] = False
         return runtime.automation.configure(character_id, policy)
 
     @server.tool(annotations=read)
@@ -305,12 +311,84 @@ def create_server(engine: Engine, runtime=None) -> MCPServer:
                 result["semantic_status"] = "unavailable_lexical_candidates_preserved"
         return result
 
+    @server.tool(annotations=write)
+    def prepare_knowledge_reconciliation(character_id: str) -> dict:
+        """Inspect the next committed-fact conflict page; host reasons, no backend model call."""
+        from .host_memory import digest
+        from .knowledge import RECONCILE_PROMPT
+
+        batch = engine.knowledge.prepare(character_id)
+        return {
+            "batch": batch,
+            "batch_id": digest(batch) if batch else None,
+            "instructions": RECONCILE_PROMPT,
+        }
+
+    @server.tool(annotations=write)
+    def commit_knowledge_reconciliation(
+        character_id: str, batch_id: str, decisions: Transitions
+    ) -> dict:
+        """Apply evidence-grounded transitions from the inspected page. No blind overwrites."""
+        from .engine import Conflict
+        from .host_memory import digest
+
+        with engine._transaction():
+            batch = engine.knowledge.prepare(character_id)
+            if not batch or digest(batch) != batch_id:
+                raise Conflict("Reconciliation changed; inspect the new page")
+            return engine.knowledge.apply(character_id, batch, decisions)
+
+    def note_batch(character_id, evidence_id):
+        from .note_evolution import snapshot
+
+        source = snapshot(engine, character_id, evidence_id)
+        ids = [
+            r["id"]
+            for r in engine.memory.recall(
+                character_id, source["text"][:16000], limit=5, before_id=evidence_id
+            )["sources"]
+        ]
+        return {
+            "source": source,
+            "candidates": [snapshot(engine, character_id, eid) for eid in ids],
+        }
+
+    @server.tool(annotations=read)
+    def prepare_note_evolution(character_id: str, evidence_id: str) -> dict:
+        """Inspect causal originals and old notes before authoring a retrieval note."""
+        from .host_memory import digest
+        from .note_evolution import NOTE_PROMPT
+
+        with engine._lock:
+            batch = note_batch(character_id, evidence_id)
+            return {**batch, "batch_id": digest(batch), "instructions": NOTE_PROMPT}
+
+    @server.tool(annotations=write)
+    def commit_note_evolution(
+        character_id: str, evidence_id: str, batch_id: str, proposal: NoteEvolution
+    ) -> dict:
+        """Update a source note and up to two linked older notes; keep originals intact."""
+        from .engine import Conflict
+        from .host_memory import digest
+        from .note_evolution import apply
+
+        with engine._transaction():
+            batch = note_batch(character_id, evidence_id)
+            if digest(batch) != batch_id:
+                raise Conflict("Note sources changed; inspect them again")
+            return {
+                "changed": apply(
+                    engine, character_id, batch["source"], batch["candidates"], proposal
+                )
+            }
+
     @server.tool(annotations=read)
     def inspect_continuity_tasks(character_id: str) -> dict:
         """Read missing per-turn analysis plus host summary status; no new model calls."""
         return {
             "pending_analysis": engine.continuity.backlog(character_id),
             "summary": runtime.host_memory.notice(character_id),
+            "knowledge_reconciliation_pending": bool(engine.knowledge.pending(character_id)),
         }
 
     @server.tool(annotations=write)

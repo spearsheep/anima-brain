@@ -194,6 +194,11 @@ class Engine:
                 self.db.execute(statement)
             self.db.execute("PRAGMA user_version=2")
         self.memory = MemorySystem(self)
+        from .evidence_index import EvidenceIndex
+        from .knowledge import Knowledge
+
+        self.evidence_index = EvidenceIndex(self)
+        self.knowledge = Knowledge(self)
         # Existing v1 conversations remain first-class originals after migration.
         # This is local indexing only: no extraction, model call or changed transcript.
         with self._transaction():
@@ -292,12 +297,17 @@ class Engine:
             ]
 
     def _memory(self, row) -> Memory:
-        data = {k: row[k] for k in Memory.model_fields if k != "details"}
+        data = {k: row[k] for k in Memory.model_fields if k not in ("details", "lifecycle")}
         details = self.db.execute(
             "SELECT data FROM memory_details WHERE memory_id=?", (row["id"],)
         ).fetchone()
         if details:
             data["details"] = json.loads(details[0])
+        lifecycle = self.db.execute(
+            "SELECT data FROM fact_lifecycle WHERE memory_id=?", (row["id"],)
+        ).fetchone()
+        if lifecycle:
+            data["lifecycle"] = json.loads(lifecycle[0])
         return Memory.model_validate(data)
 
     def _get_memory(self, character_id: str, memory_id: str):
@@ -360,7 +370,8 @@ class Engine:
                 and current.category == draft.category
                 and current.details == draft.details
             ):
-                return current
+                self.knowledge.reinforce(current.id, turn_id)
+                return self._memory(self._get_memory(character_id, current.id))
             raise Conflict(
                 f"Memory key {draft.key!r} exists; explicitly correct it with expected_revision"
             )
@@ -389,6 +400,7 @@ class Engine:
         self.db.execute(
             "INSERT INTO memory_details VALUES(?,?)", (memory_id, draft.details.model_dump_json())
         )
+        self.knowledge.initialize(memory_id, turn_id, time.time())
         return self._memory(self._get_memory(character_id, memory_id))
 
     def remember(self, character_id: str, draft: MemoryDraft) -> Memory:
@@ -427,6 +439,7 @@ class Engine:
                     {
                         **dict(row),
                         "details": self._memory(row).details.model_dump(mode="json"),
+                        "lifecycle": self._memory(row).lifecycle.model_dump(mode="json"),
                         "invalidation": kind,
                         "valid_until": str(draft.details.valid_from)
                         if draft.details.valid_from
@@ -467,6 +480,7 @@ class Engine:
         # A cached derived core must not re-introduce a corrected claim.
         self._knowledge_update(character_id, row, kind)
         self._invalidate_documents(character_id, row["source_turn_id"])
+        self.knowledge.initialize(memory_id, turn_id, time.time())
         return self._memory(self._get_memory(character_id, memory_id))
 
     def _knowledge_update(self, character_id, old_row, operation):
@@ -690,7 +704,12 @@ class Engine:
                         )
                     }.values()
                 )
+                from .knowledge import eligible
+
+                today = local_today(self, character_id)
                 for memory in candidates:
+                    if not eligible(memory, today=today):
+                        continue
                     context.memories.append(memory)
                     if not fits():
                         context.memories.pop()
@@ -801,6 +820,11 @@ class Engine:
                 for r in self.db.execute("SELECT data FROM turn_media WHERE turn_id=?", (turn_id,))
                 for m in json.loads(r[0])
             }
+            for draft in [*request.memories, *[c.draft for c in request.corrections]]:
+                if draft.details.correction_evidence and (
+                    draft.details.correction_evidence not in draft.source_quote
+                ):
+                    raise ValueError("correction_evidence must be an exact source_quote excerpt")
             for proposal in [
                 *request.memories,
                 *[c.draft for c in request.corrections],

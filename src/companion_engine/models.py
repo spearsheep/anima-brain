@@ -47,6 +47,7 @@ class CharacterSpec(Model):
 
 class MemoryDetails(Model):
     state_key: str = Field(default="", max_length=160)
+    correction_evidence: str = Field(default="", max_length=2000)
     recurrence: Literal["none", "annual"] = "none"
     date_kind: Literal["ordinary", "celebrate", "gentle", "deadline"] = "ordinary"
     subject: Literal["user", "character", "shared", "third_party"] = "user"
@@ -70,6 +71,14 @@ class MemoryDetails(Model):
         if self.loop_status == "open" and self.subject != "user":
             raise ValueError("Open loops must describe the user's own life")
         return self
+
+
+class EpisodeMetadata(Model):
+    importance: int = Field(default=5, ge=1, le=10, strict=True)
+    valence: float = Field(default=0, ge=-1, le=1)
+    arousal: float = Field(default=0, ge=0, le=1)
+    event_dates: list[date] = Field(default_factory=list, max_length=20)
+    unresolved: list[str] = Field(default_factory=list, max_length=10)
 
 
 class ObservedMedia(Model):
@@ -102,6 +111,16 @@ class MemoryDraft(Model):
     details: MemoryDetails = Field(default_factory=MemoryDetails)
 
 
+class MemoryLifecycle(Model):
+    observed_at: float | None = None
+    last_reinforced_at: float | None = None
+    mentions: int = 1
+    invalidation: Literal["corrected", "superseded"] | None = None
+    invalidated_at: float | None = None
+    valid_until: date | None = None
+    superseded_by: str | None = None
+
+
 class Memory(Model):
     id: str
     character_id: str
@@ -114,6 +133,7 @@ class Memory(Model):
     revision: int
     updated_at: float
     details: MemoryDetails = Field(default_factory=MemoryDetails)
+    lifecycle: MemoryLifecycle = Field(default_factory=MemoryLifecycle)
 
 
 class Appraisal(Model):
@@ -159,6 +179,7 @@ class TurnContext(Model):
     core_memory: list[dict] = Field(default_factory=list)
     open_loops: list[Memory] = Field(default_factory=list)
     media_observations: list[ObservedMedia] = Field(default_factory=list, max_length=4)
+    temporal_memory: dict = Field(default_factory=dict)
     current_date: str = ""
     calendar: list[dict] = Field(default_factory=list)
     response_style: dict = Field(default_factory=dict)

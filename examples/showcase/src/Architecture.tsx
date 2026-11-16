@@ -113,7 +113,7 @@ function RetrievalLab({ t }: { t: Translate }) {
             <span className="atlas-badge">RRF</span>
           </div>
           <p className="atlas-formula">
-            Σ <span>1 / (60 + rank)</span>
+            Σ <span>1 / (40 + rank)</span>
           </p>
           <p>
             {t(
@@ -148,15 +148,16 @@ function RetrievalLab({ t }: { t: Translate }) {
               <small>{t("Higher ranks first within this search pool")}</small>
             </span>
             <output data-testid="rrf-score">
-              {(1 / (60 + lex) + (vectors ? 1 / (60 + vector) : 0)).toFixed(5)}
+              {(1 / (40 + lex) + (vectors ? 1 / (40 + vector) : 0)).toFixed(5)}
             </output>
           </div>
           <p className="atlas-fine">
             {t(
-              "Rank starts at 1. Missing channels contribute 0. Derived memory also has a CJK candidate channel. Recency is not part of RRF.",
+              "Evidence uses RRF; archive memories also use recency and importance.",
             )}
           </p>
-          <code>memory.py · recall() / retrieval.py · search()</code>
+          <code>memory.py · recall()</code>
+          <p className="atlas-fine">{t("Archive: 0.6 relevance + 0.25 exp(-age/45) + 0.15 importance/10")}</p>
         </article>
         <article className="atlas-equation">
           <div className="atlas-card-heading">

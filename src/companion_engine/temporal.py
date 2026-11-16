@@ -69,6 +69,17 @@ def lookup(engine, character_id, request):
                 ]
             for item in versions:
                 d = MemoryDetails.model_validate(item.get("details", {}))
+                lifecycle = item.get("lifecycle", {})
+                if lifecycle.get("invalidation") == "corrected":
+                    continue
+                if lifecycle.get("invalidation"):
+                    item = {
+                        **item,
+                        "invalidation": lifecycle["invalidation"],
+                        "valid_until": lifecycle.get("valid_until"),
+                    }
+                    if request.mode == "current":
+                        continue
                 if not _matches(item["text"], request.query):
                     continue
                 # Direct inspection may show suppressed facts, with their policy retained.
@@ -83,7 +94,7 @@ def lookup(engine, character_id, request):
                         continue
                     if d.valid_from > target or (until and target >= until):
                         continue
-                    if item is not current and not until:
+                    if (item is not current or lifecycle.get("invalidation")) and not until:
                         if len(unknown) < request.limit:
                             unknown.append(item)
                         continue
@@ -132,7 +143,11 @@ def calendar(engine, character_id, *, now=None, days=7):
     ):
         m = engine._memory(row)
         d = m.details
-        if d.followup == "never_unless_asked" or d.loop_status == "suppressed":
+        if (
+            m.lifecycle.invalidation
+            or d.followup == "never_unless_asked"
+            or d.loop_status in ("suppressed", "stale")
+        ):
             continue
         due = d.event_date
         if d.recurrence == "annual":

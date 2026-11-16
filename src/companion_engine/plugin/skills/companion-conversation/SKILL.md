@@ -109,8 +109,18 @@ conversations, files, credentials or production accounts to fill missing context
 
 ## Host-authored summary maintenance
 
+- After committing a current-state change or explicit correction, inspect
+  `inspect_continuity_tasks`. If reconciliation is pending, call
+  `prepare_knowledge_reconciliation`, judge the supplied originals, then
+  `commit_knowledge_reconciliation` with the snapshot ID. Empty transitions are normal.
+  Do at most one page per turn. A corrected fact needs an explicit quoted retraction;
+  a superseded fact was previously true. Never retire facts because keys or topics match.
+- For retrieval notes, use `prepare_note_evolution` and `commit_note_evolution`.
+  Preserve named items, dates, subjects and uncertainty. Update an older note only when
+  an exact-quote link supports a clarification/correction of that old source. Subsequent
+  events belong in new notes. These host tools do not call another model or rewrite originals.
 - If the user chooses summaries by ChatGPT/the host, call `configure_host_summaries`.
-  This switches off backend summary-model calls without changing embedding settings.
+  This switches off backend summary/reconciliation-model calls without changing embeddings.
 - Check `memory_maintenance` returned by prepare/commit. In host mode when `due=true`,
   call `prepare_memory_summary`; read the bounded originals and current facts. Write
   the episode and structured `notebook` yourself (use the supplied schema, `core=""`),

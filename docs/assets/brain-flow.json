@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "width": 1200,
   "height": 650,
   "views": [
@@ -311,7 +311,7 @@
       "id": "retrieval",
       "label": "Retrieval & recency",
       "eyebrow": "02 / TWO DIFFERENT RANKING JOBS",
-      "description": "Relevance finds evidence. Recency prioritizes follow-ups.",
+      "description": "Original evidence, archive memories and open threads use distinct rankings.",
       "nodes": [
         {
           "id": "query",
@@ -352,8 +352,8 @@
           "y": 160,
           "w": 250,
           "h": 98,
-          "title": "Reciprocal rank fusion",
-          "subtitle": "Σ 1 / (60 + rank)",
+          "title": "Evidence / archive",
+          "subtitle": "RRF / weighted relevance",
           "tag": "RELEVANCE",
           "tone": "memory"
         },
@@ -430,7 +430,7 @@
         {
           "label": "Find",
           "title": "Search originals and derived memory.",
-          "text": "Original evidence and derived facts/documents have separate search pools. FTS5 supplies lexical candidates. If configured and indexed, normalized vectors supply cosine candidates. Each channel keeps up to 60 hits.",
+          "text": "Originals use raw contextual vectors, separate note vectors and lexical matches. Keep top 32 raw, 16 note and 60 lexical candidates. Facts and episodes have their own archive search.",
           "example": "A semantically similar message can be found even when it uses different words.",
           "detail": "Vectors are optional; layered search additionally has a bounded CJK substring channel.",
           "active": [
@@ -441,10 +441,10 @@
         },
         {
           "label": "Fuse",
-          "title": "Combine ranks, not raw similarity scores.",
-          "text": "RRF adds 1 / (60 + rank) for every channel that found an item. Ranks start at 1; a missing channel contributes zero. The evidence pool and derived pool are ranked separately.",
-          "example": "Rank 1 in keywords + rank 4 in vectors → 1/61 + 1/64 = 0.03202.",
-          "detail": "No age, importance or emotion multiplier is applied to this RRF score.",
+          "title": "Preserve evidence; rank archive memories.",
+          "text": "Evidence uses RRF: sum 1/(40 + rank), with bounded one-hop links. Archive facts and episodes use 0.6 relevance + 0.25 exp(-age_days/45) + 0.15 importance/10.",
+          "example": "Keyword rank 1 + raw-vector rank 4 → 1/41 + 1/44 = 0.04712.",
+          "detail": "Archive age uses event/reinforcement time for facts and source-span end for episodes. No age penalty on original evidence.",
           "active": [
             "lexical",
             "vector",
@@ -632,8 +632,8 @@
         {
           "label": "Trigger",
           "title": "A durable backlog makes work repeatable.",
-          "text": "Committed evidence is the queue. With summaries enabled, work becomes due after 4 pending turns, 12,000 pending characters or 300 idle seconds by default. Host mode also reacts to unprocessed knowledge changes.",
-          "example": "Four new exchanges can make a summary due. An idle timer does not run a model by itself.",
+          "text": "New SDK characters consolidate after 20 pending exchanges, 12k characters, 300 seconds idle, or a knowledge invalidation. Busy chat retains the newest 10 exchanges; idle flush handles short conversations.",
+          "example": "A running worker checks the durable backlog; reaching an idle threshold does not wake a stopped process.",
           "detail": "Thresholds are configurable. A running host or worker must act on due work.",
           "active": [
             "backlog",
@@ -643,7 +643,7 @@
         {
           "label": "Write",
           "title": "Let one writer own the summary.",
-          "text": "Hosts without an explicit policy request host summaries; SDK-created characters start with maintenance disabled by default. An active host reads the snapshot and writes the episode plus structured notebook. Opt-in background summaries use a configured model instead.",
+          "text": "SDK defaults enable configured background writers; MCP defaults use host authoring. Each batch evolves grounded notes and writes episodes, a cited user notebook and optional separate character core.",
           "example": "Episode: the rehearsal and reschedule. Notebook: current commitments and grounded response preferences.",
           "detail": "Host and background summary modes are mutually exclusive. Character self-core is optional and kept separate.",
           "active": [

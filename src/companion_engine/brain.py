@@ -46,13 +46,24 @@ agreeing with conclusions. Do not invent shared experiences or unnecessary follo
 class BrainConfig(Model):
     allow_chat_images: bool = False
     context_chars: int = Field(default=48000, ge=4000, le=200000, strict=True)
-    recent_turns: int = Field(default=6, ge=0, le=100, strict=True)
+    recent_turns: int = Field(default=10, ge=0, le=100, strict=True)
     recent_chars: int = Field(default=12000, ge=0, le=100000, strict=True)
     memory: MemoryConfig = Field(default_factory=MemoryConfig)
     reply_instructions: str = Field(default=NATURAL_REPLY, max_length=8000)
     capture_context: bool = False
-    # Standalone apps have no host to author summaries. Optional paid maintenance is opt-in.
-    automation: MemoryAutomation = Field(default_factory=MemoryAutomation)
+    # Standalone apps need a backend writer; MCP hosts keep their own authoring workflow.
+    # Providers must be configured; explicit persisted/off policies are never overwritten.
+    automation: MemoryAutomation = Field(
+        default_factory=lambda: MemoryAutomation(
+            embedding=True,
+            semantic_retrieval=True,
+            summaries=True,
+            reconcile=True,
+            summary_turns=20,
+            summary_batch_messages=20,
+            retain_recent_turns=10,
+        )
+    )
     start_worker: bool = True
 
 

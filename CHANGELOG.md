@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased — memory architecture alignment
+
+- Restore causal contextual raw/note embeddings, chunk offsets, typed linked old-note evolution,
+  production-style archive ranking and explicit temporal reader actions.
+- Add durable cross-key knowledge reconciliation, reinforcement/lifecycle metadata and current
+  versus corrected/superseded filtering; regenerate affected core summaries.
+- Add background structured notebook/episode metadata and separate character core support.
+- New SDK characters enable configured memory maintenance by default, with 10 recent exchanges
+  and a retained working window. Existing explicit off policies remain off; provider calls can
+  increase. MCP host authoring remains available without a backend LLM key.
+- See `docs/memory-parity.md` for behavior, migration and local infrastructure differences.
 
 ## Unreleased — live calls and architecture walkthrough
 

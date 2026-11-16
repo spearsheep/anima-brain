@@ -8,8 +8,11 @@ Exact search remains linear; this is a local engine, not an ANN service.
 import hashlib
 import heapq
 import json
+import math
 import re
+import time
 from array import array
+from datetime import datetime, timezone
 
 from .memory import checked_vector
 
@@ -123,6 +126,7 @@ class LayeredMemory:
         with self.engine._lock:
             self.engine._character(character_id)
             ranks = []
+            cosine = {}
             tokens = terms(query)[:48]
             if tokens:
                 match = " OR ".join('"' + t.replace('"', '""') + '"' for t in tokens)
@@ -167,17 +171,62 @@ class LayeredMemory:
                     if len(values) != len(q):
                         raise ValueError("Embedding dimensions changed; use a new namespace")
                     score = sum(a * b for a, b in zip(values, q))
+                    if any(row[0] in rank for rank in ranks):
+                        cosine[row[0]] = score
                     if score > 0:
                         heapq.heappush(heap, (score, row[0]))
                         if len(heap) > 60:
                             heapq.heappop(heap)
+                cosine.update({key: value for value, key in heap})
                 ranks.append([key for _, key in sorted(heap, reverse=True)])
             scores = {}
             for rank in ranks:
                 for position, key in enumerate(rank):
                     scores[key] = scores.get(key, 0) + 1 / (60 + position + 1)
-            result = {"facts": [], "documents": [], "bounded": True}
-            for key in sorted(scores, key=lambda k: (-scores[k], k))[:limit]:
+            from .knowledge import eligible
+            from .temporal import local_today
+
+            ranked, metadata = {}, {}
+            now = time.time()
+            today = local_today(self.engine, character_id, now)
+            max_rrf = max(scores.values(), default=1)
+            for key, rrf in scores.items():
+                if key.startswith("fact:"):
+                    memory = self.engine._memory(self.engine._get_memory(character_id, key[5:]))
+                    if not eligible(memory, now=now, today=today):
+                        continue
+                    d = memory.details
+                    when = (
+                        datetime.combine(
+                            d.event_date, datetime.min.time(), timezone.utc
+                        ).timestamp()
+                        if d.event_date
+                        else memory.lifecycle.last_reinforced_at or memory.updated_at
+                    )
+                    importance = d.importance
+                else:
+                    detail = self.engine.memory.document_metadata(key[4:])
+                    when, importance = detail["covers_to"], detail["importance"]
+                relevance = cosine.get(key, rrf / max_rrf)
+                recency = math.exp(-max(0, now - when) / (45 * 86400))
+                ranked[key] = 0.6 * relevance + 0.25 * recency + 0.15 * importance / 10
+                metadata[key] = {
+                    "relevance": relevance,
+                    "relevance_basis": "cosine" if key in cosine else "lexical_rank_proxy",
+                    "recency": recency,
+                    "importance": importance,
+                    "time_basis": when,
+                    "score": ranked[key],
+                }
+            result = {
+                "facts": [],
+                "documents": [],
+                "bounded": True,
+                "ranking": "0.6*relevance + 0.25*exp(-age_days/45) + 0.15*importance/10",
+                "scores": {},
+            }
+            for key in sorted(ranked, key=lambda k: (-ranked[k], k))[:limit]:
+                result["scores"][key] = metadata[key]
                 if key.startswith("fact:"):
                     item = self.engine._memory(self.engine._get_memory(character_id, key[5:]))
                     result["facts"].append(item.model_dump(mode="json"))

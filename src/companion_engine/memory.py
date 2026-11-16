@@ -38,6 +38,8 @@ SCHEMA = [
     "character_id TEXT NOT NULL, kind TEXT NOT NULL, text TEXT NOT NULL, sources TEXT "
     "NOT NULL, created_at REAL NOT NULL, FOREIGN KEY(owner,character_id) REFERENCES "
     "characters(owner,id) ON DELETE CASCADE)",
+    "CREATE TABLE IF NOT EXISTS document_metadata (document_id TEXT PRIMARY KEY REFERENCES "
+    "documents(id) ON DELETE CASCADE, data TEXT NOT NULL)",
     "CREATE TABLE IF NOT EXISTS vectors (evidence_id TEXT NOT NULL REFERENCES "
     "evidence(id) ON DELETE CASCADE, model TEXT NOT NULL, digest TEXT NOT NULL, vector "
     "TEXT NOT NULL, PRIMARY KEY(evidence_id,model))",
@@ -109,6 +111,8 @@ class MemorySystem:
                 (eid, self.engine.owner, character_id, turn_id, speaker, text, observed_at),
             )
             self._index(eid, text)
+            if hasattr(self.engine, "evidence_index"):
+                self.engine.evidence_index.add(self._source(character_id, eid))
         row = self.db.execute("SELECT data FROM turn_media WHERE turn_id=?", (turn_id,)).fetchone()
         if row and json.loads(row[0]):
             text = "Host-observed media (not independently verified): " + row[0]
@@ -126,6 +130,8 @@ class MemorySystem:
                 ),
             )
             self._index(eid, text)
+            if hasattr(self.engine, "evidence_index"):
+                self.engine.evidence_index.add(self._source(character_id, eid))
 
     def annotate(self, character_id, evidence_id, note: Note, expected_revision=0):
         """CAS note updates; exact quotes on both original sources; no invented IDs."""
@@ -159,15 +165,21 @@ class MemorySystem:
                 (evidence_id, note.description, json.dumps(note.keywords), expected_revision + 1),
             )
             self.db.execute("DELETE FROM evidence_links WHERE source_id=?", (evidence_id,))
+            self.db.execute("DELETE FROM note_dependencies WHERE evidence_id=?", (evidence_id,))
             for link in note.links:
                 self.db.execute(
                     "INSERT INTO evidence_links VALUES(?,?,?)",
                     (evidence_id, link.target_id, link.relation),
                 )
+                self.db.execute(
+                    "INSERT INTO note_dependencies VALUES(?,?,?,?)",
+                    (evidence_id, link.target_id, link.source_quote, link.target_quote),
+                )
             self._index(
                 evidence_id, source["text"] + " " + note.description + " " + " ".join(note.keywords)
             )
             self.db.execute("DELETE FROM vectors WHERE evidence_id=?", (evidence_id,))
+            self.engine.evidence_index.invalidate_note(evidence_id)
         return {"id": evidence_id, "revision": expected_revision + 1}
 
     def expand(self, character_id, evidence_ids, *, neighbors=1):
@@ -204,11 +216,24 @@ class MemorySystem:
         result, used = [], 0
         for row in rows:
             item = {k: row[k] for k in ("id", "turn_id", "speaker", "text", "observed_at")}
+            item["context"] = self.engine.evidence_index.context(row["id"])
+            if "matched_excerpts" in row:
+                item["matched_excerpts"] = row["matched_excerpts"]
+                if len(item["text"]) > 2400:
+                    item["source_length"] = len(item["text"])
+                    item["text"] = "\n[…]\n".join(
+                        item["text"][h["start"] : h["end"]] for h in row["matched_excerpts"]
+                    )
+                    item["partial_source"] = True
             note = self.db.execute(
                 "SELECT description,keywords,revision FROM notes WHERE evidence_id=?", (row["id"],)
             ).fetchone()
             if note:
-                item["retrieval_note"] = {**dict(note), "caution": "Derived hint, not evidence."}
+                item["retrieval_note"] = {
+                    **dict(note),
+                    "keywords": json.loads(note["keywords"]),
+                    "caution": "Derived hint, not evidence.",
+                }
             item["knowledge_updates"] = [
                 dict(r)
                 for r in self.db.execute(
@@ -239,6 +264,7 @@ class MemorySystem:
         model=None,
         start_date=None,
         end_date=None,
+        before_id=None,
     ):
         """Hybrid RRF over FTS + exact cosine; paged vectors, fixed result memory.
         Dates filter OBSERVATION time; fact event dates are separately labelled.
@@ -253,6 +279,8 @@ class MemorySystem:
             raise ValueError("Invalid date range")
         with self.engine._lock:
             self.engine._character(character_id)
+            if before_id:
+                self._source(character_id, before_id)
             tokens = terms(query)[:64]
             lexical = []
             if tokens:
@@ -276,7 +304,10 @@ class MemorySystem:
                     "SELECT v.evidence_id,v.vector FROM vectors v JOIN evidence e ON "
                     "e.id=v.evidence_id "
                     "WHERE e.owner=? AND e.character_id=? AND v.model=? AND "
-                    "date(e.observed_at,'unixepoch') BETWEEN ? AND ?",
+                    "date(e.observed_at,'unixepoch') BETWEEN ? AND ? AND NOT EXISTS "
+                    "(SELECT 1 FROM evidence_chunks c JOIN evidence_embeddings ev "
+                    "ON ev.chunk_id=c.id WHERE c.evidence_id=e.id AND ev.lane='raw' "
+                    "AND ev.model=v.model)",
                     (self.engine.owner, character_id, model, lo, hi),
                 )
                 heap = []
@@ -293,12 +324,70 @@ class MemorySystem:
                     if len(heap) > 60:
                         heapq.heappop(heap)
                 semantic = [eid for _, eid in sorted(heap, reverse=True)]
+            extra_ranks, hits = (
+                self.engine.evidence_index.rankings(
+                    character_id, query_vector, model, lo, hi, before_id
+                )
+                if query_vector is not None
+                else ([], {})
+            )
             scores = {}
-            for ranking in (lexical, semantic):
+            for ranking in (lexical, semantic, *extra_ranks):
                 for rank, eid in enumerate(ranking):
-                    scores[eid] = scores.get(eid, 0) + 1 / (60 + rank + 1)
+                    scores[eid] = scores.get(eid, 0) + 1 / (40 + rank + 1)
+            if before_id:
+                cutoff = self.engine.evidence_index.order(before_id)
+                scores = {
+                    eid: score
+                    for eid, score in scores.items()
+                    if self.engine.evidence_index.order(eid) < cutoff
+                }
+            # Bounded one-hop expansion. Raw evidence does not get a recency penalty.
+            seeds = sorted(scores, key=lambda eid: (-scores[eid], eid))[:4]
+            added = 0
+            for eid in seeds:
+                for link in self.db.execute(
+                    "SELECT target_id FROM evidence_links WHERE source_id=? UNION "
+                    "SELECT source_id FROM evidence_links WHERE target_id=? LIMIT 6",
+                    (eid, eid),
+                ):
+                    if link[0] in scores or added >= 6:
+                        continue
+                    source = self._source(character_id, link[0])
+                    day = time.strftime("%Y-%m-%d", time.gmtime(source["observed_at"]))
+                    if not lo <= day <= hi:
+                        continue
+                    if before_id and self.engine.evidence_index.order(link[0]) >= cutoff:
+                        continue
+                    scores[link[0]] = 1 / 80
+                    added += 1
             ids = sorted(scores, key=lambda eid: (-scores[eid], eid))[:limit]
-            packed = self._pack([self._source(character_id, eid) for eid in ids])
+            rows = []
+            for eid in ids:
+                source = self._source(character_id, eid)
+                if eid in hits:
+                    distinct = {
+                        (h["start"], h["end"]): h
+                        for h in sorted(hits[eid], key=lambda h: h["cosine"])
+                    }
+                    source["matched_excerpts"] = sorted(
+                        distinct.values(), key=lambda h: -h["cosine"]
+                    )[:2]
+                elif len(source["text"]) > 2400:
+                    pos = next(
+                        (
+                            source["text"].lower().find(t)
+                            for t in tokens
+                            if t in source["text"].lower()
+                        ),
+                        0,
+                    )
+                    start = max(0, pos - 180)
+                    source["matched_excerpts"] = [
+                        {"start": start, "end": min(start + 1400, len(source["text"]))}
+                    ]
+                rows.append(source)
+            packed = self._pack(rows)
             packed["mode"] = "hybrid_rrf" if query_vector is not None else "lexical_fts5"
             packed["date_filter_basis"] = "observation_time_not_event_date"
             return packed
@@ -345,7 +434,85 @@ class MemorySystem:
                 ),
             )
 
-    def consolidate(self, character_id, kind, text, source_ids):
+    def maintenance_sources(self, character_id, policy):
+        """Compact older working memory; idle flush also handles short conversations."""
+        with self.engine._lock:
+            self.engine._character(character_id)
+            latest = self.db.execute(
+                "SELECT max(observed_at) FROM evidence WHERE owner=? AND character_id=?",
+                (self.engine.owner, character_id),
+            ).fetchone()[0]
+            keep = (
+                policy.retain_recent_turns
+                if latest and time.time() - latest < policy.idle_seconds
+                else 0
+            )
+            rows = self.db.execute(
+                "SELECT e.* FROM evidence e WHERE e.owner=? AND e.character_id=? "
+                "AND NOT EXISTS(SELECT 1 FROM maintenance_processed p WHERE p.evidence_id=e.id) "
+                "AND e.turn_id NOT IN (SELECT id FROM turns WHERE owner=? AND character_id=? "
+                "AND status='committed' ORDER BY created_at DESC,rowid DESC LIMIT ?) "
+                "ORDER BY e.observed_at,e.rowid LIMIT ?",
+                (
+                    self.engine.owner,
+                    character_id,
+                    self.engine.owner,
+                    character_id,
+                    keep,
+                    policy.summary_batch_messages,
+                ),
+            ).fetchall()
+            if (
+                not rows
+                and self.db.execute(
+                    "SELECT 1 FROM knowledge_updates WHERE owner=? AND character_id=? "
+                    "AND processed=0",
+                    (self.engine.owner, character_id),
+                ).fetchone()
+            ):
+                rows = self.db.execute(
+                    "SELECT * FROM evidence WHERE owner=? AND character_id=? "
+                    "ORDER BY observed_at DESC,rowid DESC LIMIT 8",
+                    (self.engine.owner, character_id),
+                ).fetchall()
+            selected, size = [], 0
+            for row in rows:
+                count = len(json.dumps(dict(row)))
+                if selected and size + count > 48000:
+                    break
+                selected.append(dict(row))
+                size += count
+            return selected
+
+    def document_metadata(self, document_id):
+        row = self.db.execute(
+            "SELECT data FROM document_metadata WHERE document_id=?", (document_id,)
+        ).fetchone()
+        if row:
+            return json.loads(row[0])
+        doc = self.db.execute("SELECT * FROM documents WHERE id=?", (document_id,)).fetchone()
+        # Older databases derive their episode time from sources, never migration time.
+        return self._document_metadata(document_id, json.loads(doc["sources"]))
+
+    def _document_metadata(self, document_id, source_ids, metadata=None):
+        times = [
+            self.db.execute("SELECT observed_at FROM evidence WHERE id=?", (eid,)).fetchone()[0]
+            for eid in source_ids
+        ]
+        from .models import EpisodeMetadata
+
+        detail = EpisodeMetadata.model_validate(metadata or {}).model_dump(mode="json")
+        detail.update(
+            covers_from=min(times) if times else None,
+            covers_to=max(times) if times else time.time(),
+        )
+        self.db.execute(
+            "INSERT OR REPLACE INTO document_metadata VALUES(?,?)",
+            (document_id, json.dumps(detail)),
+        )
+        return detail
+
+    def consolidate(self, character_id, kind, text, source_ids, *, metadata=None):
         """Store a derived core/episode with immutable citations; no source deletion."""
         if (
             kind not in ("core", "episode", "character_core")
@@ -375,6 +542,7 @@ class MemorySystem:
                     time.time(),
                 ),
             )
+            self._document_metadata(did, source_ids, metadata)
         return {"id": did, "kind": kind, "derived": True}
 
     def fact_version(self, character_id):
@@ -382,6 +550,16 @@ class MemorySystem:
             (r[0], r[1])
             for r in self.db.execute(
                 "SELECT id,revision FROM memories WHERE owner=? AND character_id=? ORDER BY id",
+                (self.engine.owner, character_id),
+            )
+        ]
+
+    def core_version(self, character_id):
+        return [
+            tuple(row)
+            for row in self.db.execute(
+                "SELECT id,kind,text,sources FROM documents WHERE owner=? AND character_id=? "
+                "AND kind IN ('core','character_core') ORDER BY id",
                 (self.engine.owner, character_id),
             )
         ]
@@ -396,37 +574,115 @@ class MemorySystem:
         core_source_ids=None,
         processed_ids=(),
         expected_facts=None,
+        expected_documents=None,
+        episode_metadata=None,
+        notebook=None,
+        character_core=None,
+        character_source_ids=(),
     ):
         """Validate both outputs before a single atomic write."""
-        if not all(isinstance(t, str) and t.strip() and len(t) <= 6000 for t in (episode, core)):
+        from .models import MemoryNotebook
+
+        if notebook is not None:
+            notebook = MemoryNotebook.model_validate(notebook)
+            core = notebook.render()
+        empty_core = notebook is not None and not notebook.entries
+        if not (
+            isinstance(episode, str)
+            and episode.strip()
+            and len(episode) <= 6000
+            and isinstance(core, str)
+            and len(core) <= 6000
+            and (core.strip() or empty_core)
+        ):
             raise ValueError("Invalid consolidation text")
+        if character_core is not None and not (
+            isinstance(character_core, str)
+            and character_core.strip()
+            and len(character_core) <= 6000
+            and 1 <= len(character_source_ids) <= 40
+        ):
+            raise ValueError("Character core requires bounded text and citations")
+        if character_source_ids and character_core is None:
+            raise ValueError("Character citations need character_core")
         core_source_ids = source_ids if core_source_ids is None else core_source_ids
-        if not 1 <= len(source_ids) <= 60 or not 1 <= len(core_source_ids) <= 40:
+        if not 1 <= len(source_ids) <= 60 or not (
+            1 <= len(core_source_ids) <= 40 or (empty_core and not core_source_ids)
+        ):
             raise ValueError("Invalid consolidation sources")
         with self.engine._transaction():
+            if (
+                expected_documents is not None
+                and self.core_version(character_id) != expected_documents
+            ):
+                from .engine import Conflict
+
+                raise Conflict("Core changed during consolidation; stale summary discarded")
             if expected_facts is not None and self.fact_version(character_id) != expected_facts:
                 from .engine import Conflict
 
                 raise Conflict("Facts changed during consolidation; stale summary discarded")
-            for eid in set(source_ids) | set(core_source_ids) | set(processed_ids):
+            for eid in (
+                set(source_ids)
+                | set(core_source_ids)
+                | set(processed_ids)
+                | set(character_source_ids)
+            ):
                 self._source(character_id, eid)
+            if notebook is not None:
+                if {s for e in notebook.entries for s in e.source_ids} != set(core_source_ids):
+                    raise ValueError("Notebook citations must equal core_source_ids")
+                for entry in notebook.entries:
+                    speakers = {
+                        self._source(character_id, eid)["speaker"] for eid in entry.source_ids
+                    }
+                    required = {
+                        "user_statement": "user",
+                        "host_observation": "host_observation",
+                    }.get(entry.basis)
+                    if required and required not in speakers:
+                        raise ValueError("Notebook basis requires an attributed original source")
+            if character_core is not None:
+                self.db.execute(
+                    "DELETE FROM documents WHERE owner=? AND character_id=? "
+                    "AND kind='character_core'",
+                    (self.engine.owner, character_id),
+                )
             self.db.execute(
                 "DELETE FROM documents WHERE owner=? AND character_id=? AND kind='core'",
                 (self.engine.owner, character_id),
             )
-            for kind, text in [("episode", episode), ("core", core)]:
+            outputs = [("episode", episode, source_ids), ("core", core, core_source_ids)]
+            if character_core is not None:
+                outputs.append(("character_core", character_core, character_source_ids))
+            for kind, text, ids in outputs:
+                document_id = str(uuid4())
                 self.db.execute(
                     "INSERT INTO documents VALUES(?,?,?,?,?,?,?)",
                     (
-                        str(uuid4()),
+                        document_id,
                         self.engine.owner,
                         character_id,
                         kind,
                         text,
-                        json.dumps(core_source_ids if kind == "core" else source_ids),
+                        json.dumps(ids),
                         time.time(),
                     ),
                 )
+                self._document_metadata(
+                    document_id,
+                    ids,
+                    episode_metadata if kind == "episode" else None,
+                )
+                if kind == "core" and notebook is not None:
+                    self.db.execute(
+                        "INSERT INTO notebooks VALUES(?,?)",
+                        (document_id, notebook.model_dump_json()),
+                    )
+            self.db.execute(
+                "UPDATE knowledge_updates SET processed=1 WHERE owner=? AND character_id=?",
+                (self.engine.owner, character_id),
+            )
             self.db.executemany(
                 "INSERT OR IGNORE INTO maintenance_processed VALUES(?)",
                 [(eid,) for eid in processed_ids],
@@ -469,7 +725,10 @@ class MemorySystem:
 
             def score(memory):
                 d = memory.details
-                age = max(0, time.time() - memory.updated_at) / 86400
+                age = (
+                    max(0, time.time() - (memory.lifecycle.last_reinforced_at or memory.updated_at))
+                    / 86400
+                )
                 urgency = 0
                 if d.event_date:
                     days = (d.event_date - today).days
@@ -479,7 +738,13 @@ class MemorySystem:
                     + urgency
                 )
 
-            return heapq.nlargest(12, (self.engine._memory(r) for r in rows), key=score)
+            from .knowledge import eligible
+
+            return heapq.nlargest(
+                12,
+                (m for r in rows if eligible(m := self.engine._memory(r), today=today)),
+                key=score,
+            )
 
     def facts_at(self, character_id, on_date: str | None = None):
         from .models import TemporalQuery

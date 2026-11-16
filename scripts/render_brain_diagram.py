@@ -24,7 +24,7 @@ def translate(text):
 
 parts = ['''<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="870" viewBox="0 0 1200 870" role="img" aria-labelledby="title desc">
 <title id="title">Companion brain: semantic memory, episodic memory, consolidation and emotion</title>
-<desc id="desc">A turn retrieves scoped evidence, facts, episodes and character state. The model replies, validates and commits. Cited consolidation derives episodes and core notes; bounded emotional state feeds the next turn. Relevance search uses RRF; recency is applied separately to open follow-up items.</desc>
+<desc id="desc">A turn retrieves scoped evidence, facts, episodes and character state. The model replies, validates and commits. Cited consolidation derives episodes and core notes; bounded emotional state feeds the next turn. Evidence uses RRF; archive ranking uses relevance, recency and importance.</desc>
 <rect width="1200" height="870" rx="18" fill="#f7f5ee"/>
 <style>text{font-family:Arial,"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif}.tag{font-size:8px;letter-spacing:.65px}.title{font-size:14px;font-weight:600;fill:#2e3926}.sub{font-size:9.5px;fill:#59614d}</style>
 <text x="30" y="35" font-size="10" letter-spacing="2" fill="#805239">ANIMA LAB / THE BRAIN ATLAS</text>
@@ -44,7 +44,7 @@ for n in view["nodes"]:
 for y, text in [(45, "THE CONVERSATION"), (278, "MEMORY / EVERY DERIVED RECORD KEEPS ITS SOURCES"), (489, "CONTINUITY LOOPS")]:
     parts.append(f'<text x="30" y="{y}" font-size="9" letter-spacing="1.4" fill="#626953">{escape(translate(text))}</text>')
 parts.append('''</g><path d="M30 795H1170" stroke="#d5d1c2"/>
-<text x="30" y="822" font-size="12" fill="#4b5740">Relevance: Σ 1/(60 + rank). Open-loop priority: importance × (1 + arousal) × age decay + date urgency.</text>
+<text x="30" y="822" font-size="12" fill="#4b5740">Evidence: Σ 1/(40 + rank). Archive: 0.6 relevance + 0.25 recency + 0.15 importance. Open loops: arousal + urgency.</text>
 <text x="30" y="847" font-size="11" fill="#626953">Explore four interactive views for exact formulas, cited consolidation and PAD / relationship decay. Optional features depend on configuration.</text></svg>''')
 # Translate only authored text, never coordinates, identifiers or formulas.
 ET.register_namespace("", "http://www.w3.org/2000/svg")

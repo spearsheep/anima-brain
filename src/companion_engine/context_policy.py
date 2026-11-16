@@ -3,6 +3,7 @@
 import json
 
 MEMORY_FIELDS = (
+    "temporal_memory",
     "memories",
     "evidence",
     "core_memory",
@@ -49,6 +50,7 @@ def enforce_context_policy(engine, context):
         # Never cut a source mid-sentence or leave half of a user/assistant pair.
         for field in (
             "continuity",
+            "temporal_memory",
             "memory_maintenance",
             "recent_attunement",
             "reaction_feedback",
@@ -78,6 +80,7 @@ def enforce_context_policy(engine, context):
     for field in (
         "recent_turns",
         "continuity",
+        "temporal_memory",
         "core_memory",
         "evidence",
         "memories",

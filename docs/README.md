@@ -55,3 +55,5 @@ model weights or model-provider credentials.
 
 - [Interactive Brain Atlas](brain-flow.md): semantic/episodic separation, retrieval formulas, consolidation cycles and emotional continuity, with four animated views and formula explorers.
 - [Live voice and video](live-calls.md): provider setup, SDK streaming API, persistence, cleanup and hosting boundaries.
+
+- [English demo clips](demos.md): voice, audio calls and animated video, with playback links and recording notes.

@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://anima-lab.io"><img src="docs/assets/anima-icon.png" alt="Anima Lab" width="104"></a>
+  <a href="https://www.anima-lab.io"><img src="docs/assets/anima-icon.png" alt="Anima Lab" width="104"></a>
 </p>
 
 <h1 align="center">Anima Brain</h1>
@@ -11,6 +11,7 @@
   Python 3.11+ &nbsp; · &nbsp; Alpha 0.6.0 &nbsp; · &nbsp; 代码采用 MIT 许可证
 </p>
 <p align="center">
+  <a href="#demo-clips">效果演示</a> &nbsp; / &nbsp;
   <a href="#quickstart">快速开始</a> &nbsp; / &nbsp;
   <a href="#python-sdk">Python SDK</a> &nbsp; / &nbsp;
   <a href="#connect-your-agent">接入现有 Agent</a> &nbsp; / &nbsp;
@@ -24,7 +25,7 @@ Anima Brain 为此提供 **持久记忆、角色设定和情绪连续性**。你
 
 项目对外名称为 **Anima Brain**。为兼容已有接入，Python 包名仍是 `companion-engine`，导入使用 `companion_engine`，命令行入口仍是 `companion`。
 
-项目源于 [Anima Lab](https://anima-lab.io) 的记忆与角色架构，并针对 Python 开发者重新组织了存储、配置和接口。**这里是独立适配的开发工具，不是 Anima 线上后端的完整开源版；默认设置和能力范围也不完全相同。** 具体差异见[架构说明](docs/architecture.md#source-provenance-and-non-parity)。
+项目源于 [Anima Lab](https://www.anima-lab.io) 的记忆与角色架构，并针对 Python 开发者重新组织了存储、配置和接口。**这里是独立适配的开发工具，不是 Anima 线上后端的完整开源版；默认设置和能力范围也不完全相同。** 具体差异见[架构说明](docs/architecture.md#source-provenance-and-non-parity)。
 
 ## 能给你的 Agent 加上什么
 
@@ -40,6 +41,21 @@ Anima Brain 为此提供 **持久记忆、角色设定和情绪连续性**。你
 数据保存在本地 SQLite 中，关键词检索使用 FTS5，不依赖 Anima 账号或 Convex 后端。
 
 **Python 核心包不依赖前端。** 可选的 React 展示页放在 `examples/showcase/`，可以聊天、编辑记忆、查看模型实际收到的上下文。支持 MCP Apps 的宿主还可以显示记忆操作卡片和语音播放控件。
+
+<a id="demo-clips"></a>
+
+## 先看看实际效果
+
+从本地展示页和 Python SDK 的英文演示中，单独剪出了三段。**点击预览图，打开播放器即可听到声音。**
+
+| 角色语音 · 6.5 秒 | 实时语音通话 · 5.9 秒 | 动态视频通话 · 6.6 秒 |
+| --- | --- | --- |
+| [![播放 SDK 生成的英文语音样例](docs/assets/demos/voice-message.jpg)](https://spearsheep.github.io/anima-brain-demos/#voice-message) | [![播放英文语音通话演示](docs/assets/demos/audio-call.jpg)](https://spearsheep.github.io/anima-brain-demos/#audio-call) | [![播放英文动态视频通话演示](docs/assets/demos/video-call.jpg)](https://spearsheep.github.io/anima-brain-demos/#video-call) |
+| 用角色音色读出一句自然的回复 | 语音输入 → 大脑处理 → 角色语音回复 | S2 动态形象与声音通过同一 RTC 会话录制 |
+
+[打开全部演示](https://spearsheep.github.io/anima-brain-demos/) · [下载 4K 片段](https://github.com/spearsheep/anima-brain/releases/tag/demo-media-2026-11) · [录制说明与接入方式（英文）](docs/demos.md)
+
+这些功能需要配置相应的模型服务。语音通话保留了真实调用产生的回复，界面经过重录；视频通话的画面与声音来自同一次 RTC 录制，保持同步。成片为 4K，里面的动态人物画面保留服务商实际输出的分辨率。
 
 <a id="quickstart"></a>
 
@@ -96,9 +112,9 @@ python examples/showcase/serve.py --open
 
 ## 这套“大脑”怎么工作
 
-[![中文架构动图：原始对话、语义与情景记忆、巩固循环、检索公式和情绪更新](docs/assets/brain-flow.zh-CN.gif)](docs/assets/brain-flow.zh-CN.svg)
+[![原始证据、语义与情景记忆、知识更新、巩固循环和情绪状态](docs/assets/brain-flow.zh-CN.svg)](docs/assets/brain-flow.zh-CN.svg)
 
-[中文静态架构图](docs/assets/brain-flow.zh-CN.svg) · [完整机制说明（英文）](docs/brain-flow.md)
+[打开完整 SVG](docs/assets/brain-flow.zh-CN.svg) · [查看中文动图](docs/assets/brain-flow.zh-CN.gif) · [完整机制说明（英文）](docs/brain-flow.md)
 
 启动展示页后，打开[中文交互架构图](http://127.0.0.1:8787/?view=architecture&lang=zh-CN)，可以逐步播放四条流程。页面顶部可切换 **English / 简体中文**：
 
@@ -107,7 +123,7 @@ python examples/showcase/serve.py --open
 - **历史怎么整理、旧信息怎么更新**：从达到整理阈值，到写摘要、校验来源、刷新索引；事实被纠正后，受影响的摘要也需要更新。
 - **情绪怎么延续**：展示角色的 PAD 状态、关系维度、衰减速度和变化限制，并可拖动参数观察结果。
 
-上面的中文动图和静态图直接保存在仓库中，在 GitHub 上即可查看。交互页需要启动本地展示服务。图内标注、步骤说明与公式演示均提供中英文，两种语言共用流程与计算逻辑。所有示例都不会调用模型或读取你的私有聊天；交互页支持暂停、逐步查看和减少动画模式。
+README 直接使用矢量图，并加大了字号；放大查看时文字仍保持清晰。动图作为单独的入口保留。交互页需要启动本地展示服务，采用适合逐步演示的布局；图内标注、步骤说明与公式演示均提供中英文，两种语言共用流程与计算逻辑。所有示例都不会调用模型或读取你的私有聊天；交互页支持暂停、逐步查看和减少动画模式。
 
 文字聊天与通话共用同一套记忆流程。SDK 的 `brain.call(character_id, CallOptions(...))` 提供流式音频、转写、打断、静音及已保存的传递记录，详见[通话接入指南](docs/live-calls.md)。
 
@@ -202,12 +218,12 @@ companion --db ./output/host/brain.sqlite3 host-package ./output/hosts
 
 这个仓库主要面向开发者。如果你想直接体验角色陪伴，无需自己安装或配置模型，可以使用 **Anima Lab**：
 
-**[官网与网页版](https://anima-lab.io) · [iPhone / iPad](https://apps.apple.com/app/id6776954266) · [Android 下载](https://anima-lab.io/download)**
+**[官网与网页版](https://www.anima-lab.io) · [iPhone / iPad](https://apps.apple.com/app/id6776954266) · [Android 下载](https://www.anima-lab.io/download)**
 
 <p align="center">
-  <a href="https://anima-lab.io"><img src="docs/assets/rina.jpg" alt="Anima Lab 的角色 Rina，身后是水族馆" height="240"></a>
+  <a href="https://www.anima-lab.io"><img src="docs/assets/rina.jpg" alt="Anima Lab 的角色 Rina，身后是水族馆" height="240"></a>
   &nbsp;
-  <a href="https://anima-lab.io"><img src="docs/assets/sean.jpg" alt="Anima Lab 的角色 Sean" height="240"></a>
+  <a href="https://www.anima-lab.io"><img src="docs/assets/sean.jpg" alt="Anima Lab 的角色 Sean" height="240"></a>
 </p>
 
 *Rina 和 Sean 的展示图来自 Anima Lab 公开网站，用于介绍消费端产品；它们不是 SDK 预装的角色或能力。Android 通过官方页面提供 APK 下载。*

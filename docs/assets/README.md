@@ -32,7 +32,9 @@ Links checked on 2026-11-11. Use the Android download page rather than a version
 APK URL so the README continues to point to the current release.
 
 
-`brain-flow.json` owns the graph geometry, connections and English explanations (MIT).
+`brain-flow.json` owns the interactive graph geometry, connections and English explanations (MIT).
+`scripts/render_brain_diagram.py` reflows its overview labels into a larger-type SVG for
+README reading. The SVG intentionally has a separate presentation layout.
 `brain-flow.zh-CN.json` supplies Chinese text for the same view/node IDs, steps and UI.
 It contains no separate geometry or implementation of the formulas. Keep its `version`,
 IDs and step order aligned with the graph when editing; the architecture browser checks
@@ -45,7 +47,9 @@ verify that alignment, label fit and formula behavior in both languages.
 
 Each animation captures all four Motion-powered Brain Atlas chapters over 24 seconds.
 These assets contain illustrative architecture, no user conversation or credentials.
-Both READMEs embed the appropriate language; the interactive page has a language switch.
+Both READMEs embed the SVG in the appropriate language and link to the GIF separately.
+The interactive page has a language switch. The November 2026 GIFs were refreshed after
+the contextual-retrieval and knowledge-update changes.
 The interactive source is `examples/showcase/src/Architecture.tsx`.
 
 Regenerate the static diagrams and animations with:
@@ -61,3 +65,11 @@ node examples/showcase/scripts/render-architecture.mjs http://127.0.0.1:8787 --l
 Use a system with Chinese fonts installed when rendering the Chinese GIF. SVGs use
 system font fallbacks (PingFang SC, Microsoft YaHei, Noto Sans CJK SC); no external
 font requests are required. Rendered frames stay in ignored `output/brain-animation-<language>/`.
+
+## English demo previews
+
+`demos/voice-message.jpg`, `demos/audio-call.jpg` and `demos/video-call.jpg` are
+frames from the owner's English launch demonstration. Only these small posters are
+tracked in Git; the three MP4 clips are distributed as [release assets](https://github.com/spearsheep/anima-brain/releases/tag/demo-media-2026-11).
+See [demo provenance and limitations](../demos.md). No source voice recordings, clone
+identifiers, API keys, private databases or local configuration are included.

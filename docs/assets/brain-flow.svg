@@ -1,75 +1,76 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="870" viewBox="0 0 1200 870" role="img" aria-labelledby="title desc" lang="en">
-<title id="title">Companion brain: semantic memory, episodic memory, consolidation and emotion</title>
-<desc id="desc">A turn retrieves scoped evidence, facts, episodes and character state. The model replies, validates and commits. Cited consolidation derives episodes and core notes; bounded emotional state feeds the next turn. Evidence uses RRF; archive ranking uses relevance, recency and importance.</desc>
-<rect width="1200" height="870" rx="18" fill="#f7f5ee" />
-<style>text{font-family:Arial,"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif}.tag{font-size:8px;letter-spacing:.65px}.title{font-size:14px;font-weight:600;fill:#2e3926}.sub{font-size:9.5px;fill:#59614d}</style>
-<text x="30" y="35" font-size="10" letter-spacing="2" fill="#805239">ANIMA LAB / THE BRAIN ATLAS</text>
-<text x="30" y="79" font-size="32" fill="#35422b">A moment becomes continuity.</text>
-<text x="30" y="108" font-size="13" fill="#57604c">Original evidence. Semantic facts. Episodic accounts. A character state that evolves.</text>
-<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10" fill="#898e79" /></marker></defs>
-<g transform="translate(0,130)">
-<path d="M210 125H270" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
-<path d="M450 125H510" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
-<path d="M690 125H750" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
-<path d="M930 125H990" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
-<path d="M800 174V232H134V300" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
-<path d="M850 174V250H374V300" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
-<path d="M134 398V559H290" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
-<path d="M500 510V464H614V398" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
-<path d="M550 510V482H854V398" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
-<path d="M374 300V210H330V174" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
-<path d="M614 300V216H390V174" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
-<path d="M958 559H918V450H448V174" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
-<path d="M900 174V275H1090V510" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
-<path d="M134 300V198H300V174" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
-<path d="M854 300V198H420V174" fill="none" stroke="#b2b7a2" stroke-width="1.7" marker-end="url(#arrow)" />
-<rect x="30" y="76" width="180" height="98" rx="11" fill="#fffdf7" stroke="#b9b3a3" />
-<text x="46" y="99" class="tag" fill="#4c5343">INPUT</text>
-<text x="46" y="127" class="title" fill="#4c5343">A new message</text>
-<text x="46" y="152" class="sub" fill="#4c5343">Text · voice · image</text>
-<rect x="270" y="76" width="180" height="98" rx="11" fill="#fffdf7" stroke="#b9b3a3" />
-<text x="286" y="99" class="tag" fill="#4c5343">READ</text>
-<text x="286" y="127" class="title" fill="#4c5343">Build the context</text>
-<text x="286" y="152" class="sub" fill="#4c5343">Sources + facts + state</text>
-<rect x="510" y="76" width="180" height="98" rx="11" fill="#fffdf7" stroke="#b9b3a3" />
-<text x="526" y="99" class="tag" fill="#4c5343">GENERATE</text>
-<text x="526" y="127" class="title" fill="#4c5343">Reply model</text>
-<text x="526" y="152" class="sub" fill="#4c5343">Response + proposals</text>
-<rect x="750" y="76" width="180" height="98" rx="11" fill="#fffdf7" stroke="#b9b3a3" />
-<text x="766" y="99" class="tag" fill="#4c5343">WRITE</text>
-<text x="766" y="127" class="title" fill="#4c5343">Validate &amp; commit</text>
-<text x="766" y="152" class="sub" fill="#4c5343">Quotes · policy · revisions</text>
-<rect x="990" y="76" width="180" height="98" rx="11" fill="#fffdf7" stroke="#b9b3a3" />
-<text x="1006" y="99" class="tag" fill="#4c5343">DELIVER</text>
-<text x="1006" y="127" class="title" fill="#4c5343">Back to the person</text>
-<text x="1006" y="152" class="sub" fill="#4c5343">Text · speech · video</text>
-<rect x="30" y="300" width="208" height="98" rx="11" fill="#f0f2e8" stroke="#a5af91" />
-<text x="46" y="323" class="tag" fill="#44573c">SOURCE OF RECORD</text>
-<text x="46" y="351" class="title" fill="#44573c">Original evidence</text>
-<text x="46" y="376" class="sub" fill="#44573c">Who said what, and when</text>
-<rect x="270" y="300" width="208" height="98" rx="11" fill="#f0f2e8" stroke="#a5af91" />
-<text x="286" y="323" class="tag" fill="#44573c">WHAT IS KNOWN</text>
-<text x="286" y="351" class="title" fill="#44573c">Semantic memory</text>
-<text x="286" y="376" class="sub" fill="#44573c">Facts · preferences · boundaries</text>
-<rect x="510" y="300" width="208" height="98" rx="11" fill="#f0f2e8" stroke="#a5af91" />
-<text x="526" y="323" class="tag" fill="#44573c">WHAT HAPPENED</text>
-<text x="526" y="351" class="title" fill="#44573c">Episodic memory</text>
-<text x="526" y="376" class="sub" fill="#44573c">Cited accounts of shared events</text>
-<rect x="750" y="300" width="208" height="98" rx="11" fill="#f0f2e8" stroke="#a5af91" />
-<text x="766" y="323" class="tag" fill="#44573c">COMPACT CONTEXT</text>
-<text x="766" y="351" class="title" fill="#44573c">Core notebook</text>
-<text x="766" y="376" class="sub" fill="#44573c">Merged, cited continuity</text>
-<rect x="958" y="510" width="212" height="98" rx="11" fill="#f8eee5" stroke="#c0a28e" />
-<text x="974" y="533" class="tag" fill="#895335">CHARACTER</text>
-<text x="974" y="561" class="title" fill="#895335">Emotional state</text>
-<text x="974" y="586" class="sub" fill="#895335">PAD + relationship axes</text>
-<rect x="290" y="510" width="420" height="98" rx="11" fill="#f0f2e8" stroke="#a5af91" />
-<text x="306" y="533" class="tag" fill="#44573c">MAINTENANCE</text>
-<text x="306" y="561" class="title" fill="#44573c">Consolidation cycle</text>
-<text x="306" y="586" class="sub" fill="#44573c">Summarize · cite · index · refresh</text>
-<text x="30" y="45" font-size="9" letter-spacing="1.4" fill="#626953">THE CONVERSATION</text>
-<text x="30" y="278" font-size="9" letter-spacing="1.4" fill="#626953">MEMORY / EVERY DERIVED RECORD KEEPS ITS SOURCES</text>
-<text x="30" y="489" font-size="9" letter-spacing="1.4" fill="#626953">CONTINUITY LOOPS</text>
-</g><path d="M30 795H1170" stroke="#d5d1c2" />
-<text x="30" y="822" font-size="12" fill="#4b5740">Evidence: Σ 1/(40 + rank). Archive: 0.6 relevance + 0.25 recency + 0.15 importance. Open loops: arousal + urgency.</text>
-<text x="30" y="847" font-size="11" fill="#626953">Explore four interactive views for exact formulas, cited consolidation and PAD / relationship decay. Optional features depend on configuration.</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1150" viewBox="0 0 1000 1150" lang="en" role="img" aria-labelledby="title desc">
+<title id="title">Inside Anima Brain</title>
+<desc id="desc">A message becomes retrieved context, a reply and a validated commit. Original evidence, semantic facts, cited episodes and core notes feed future turns. Consolidation updates derived memory; emotional state evolves separately. Evidence and archives use different rankings.</desc>
+<rect width="1000" height="1150" rx="20" fill="#f8f7f2"/>
+<style>text{font-family:"Helvetica Neue",Arial,"PingFang SC","Microsoft YaHei",sans-serif;fill:#25382f}.muted{fill:#5e6c65}.label{font-size:15px;letter-spacing:1px}.heading{font-size:23px;font-weight:600}.body{font-size:18px}</style>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10" fill="#6a8274"/></marker></defs>
+<text x="32" y="38" class="label muted" >ANIMA / BRAIN ATLAS</text>
+<text x="32" y="85" class="body" style="font-size:32px;font-weight:600">Memory that carries the conversation forward</text>
+<text x="32" y="117" class="body muted" >Source-backed memory. Changing knowledge. Emotional continuity.</text>
+<rect x="32" y="155" width="176" height="142" rx="12" fill="#fffefa" stroke="#d5ddd5"/>
+<text x="46" y="182" class="label muted" >01</text>
+<text x="46" y="214" class="body" style="font-size:19px;font-weight:600">A new message</text>
+<text x="46" y="277" class="body" style="font-size:16px;fill:#5e6c65">Text / voice / image</text>
+<path d="M208 222H221" fill="none" stroke="#6a8274" stroke-width="1.8" marker-end="url(#arrow)"/>
+<rect x="222" y="155" width="176" height="142" rx="12" fill="#fffefa" stroke="#d5ddd5"/>
+<text x="236" y="182" class="label muted" >02</text>
+<text x="236" y="214" class="body" style="font-size:19px;font-weight:600">Build the</text>
+<text x="236" y="238" class="body" style="font-size:19px;font-weight:600">context</text>
+<text x="236" y="277" class="body" style="font-size:16px;fill:#5e6c65">Memory + state</text>
+<path d="M398 222H411" fill="none" stroke="#6a8274" stroke-width="1.8" marker-end="url(#arrow)"/>
+<rect x="412" y="155" width="176" height="142" rx="12" fill="#fffefa" stroke="#d5ddd5"/>
+<text x="426" y="182" class="label muted" >03</text>
+<text x="426" y="214" class="body" style="font-size:19px;font-weight:600">Reply model</text>
+<text x="426" y="277" class="body" style="font-size:16px;fill:#5e6c65">Your reply model</text>
+<path d="M588 222H601" fill="none" stroke="#6a8274" stroke-width="1.8" marker-end="url(#arrow)"/>
+<rect x="602" y="155" width="176" height="142" rx="12" fill="#fffefa" stroke="#d5ddd5"/>
+<text x="616" y="182" class="label muted" >04</text>
+<text x="616" y="214" class="body" style="font-size:19px;font-weight:600">Validate &amp;</text>
+<text x="616" y="238" class="body" style="font-size:19px;font-weight:600">commit</text>
+<text x="616" y="277" class="body" style="font-size:16px;fill:#5e6c65">Quotes + revisions</text>
+<path d="M778 222H791" fill="none" stroke="#6a8274" stroke-width="1.8" marker-end="url(#arrow)"/>
+<rect x="792" y="155" width="176" height="142" rx="12" fill="#fffefa" stroke="#d5ddd5"/>
+<text x="806" y="182" class="label muted" >05</text>
+<text x="806" y="214" class="body" style="font-size:19px;font-weight:600">Back to the</text>
+<text x="806" y="238" class="body" style="font-size:19px;font-weight:600">person</text>
+<text x="806" y="277" class="body" style="font-size:16px;fill:#5e6c65">Text / speech / video</text>
+<text x="32" y="342" class="label muted" >RETRIEVE FOR THE NEXT TURN</text>
+<text x="32" y="373" class="body" >Recent dialogue + recalled sources + character guidance, within a context budget</text>
+<path d="M968 392H986V318H310V298" fill="none" stroke="#6a8274" stroke-width="1.8" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+<rect x="32" y="404" width="456" height="129" rx="12" fill="#eff3ed" stroke="#d5ddd5"/>
+<text x="52" y="438" class="heading" >Original evidence</text>
+<text x="52" y="473" class="body muted" >Exact messages, speakers, timestamps</text>
+<text x="52" y="501" class="body muted" >Contextual embeddings + notes + source links</text>
+<rect x="512" y="404" width="456" height="129" rx="12" fill="#eff3ed" stroke="#d5ddd5"/>
+<text x="532" y="438" class="heading" >Semantic memory</text>
+<text x="532" y="473" class="body muted" >Facts, preferences and boundaries</text>
+<text x="532" y="501" class="body muted" >Current / superseded / corrected revisions</text>
+<rect x="32" y="557" width="456" height="129" rx="12" fill="#eff3ed" stroke="#d5ddd5"/>
+<text x="52" y="591" class="heading" >Episodic memory</text>
+<text x="52" y="626" class="body muted" >Cited summaries of shared events</text>
+<text x="52" y="654" class="body muted" >Original evidence stays available for checking</text>
+<rect x="512" y="557" width="456" height="129" rx="12" fill="#eff3ed" stroke="#d5ddd5"/>
+<text x="532" y="591" class="heading" >Core notebook</text>
+<text x="532" y="626" class="body muted" >Merged user notes + separate character core</text>
+<text x="532" y="654" class="body muted" >Compact continuity, refreshed after corrections</text>
+<text x="32" y="733" class="label muted" >TWO CONTINUITY LOOPS</text>
+<rect x="32" y="754" width="576" height="171" rx="12" fill="#e7eee4" stroke="#d5ddd5"/>
+<text x="52" y="790" class="heading" >Consolidation cycle</text>
+<text x="52" y="826" class="body" >Summarize → cite → reindex → refresh</text>
+<text x="52" y="857" class="body muted" >Configured worker or host; original sources are retained</text>
+<text x="52" y="888" class="body muted" >Corrections invalidate affected derived summaries</text>
+<path d="M32 469H20V840H31" fill="none" stroke="#6a8274" stroke-width="1.8" marker-end="url(#arrow)"/>
+<path d="M585 754V710H730V687" fill="none" stroke="#6a8274" stroke-width="1.8" marker-end="url(#arrow)"/>
+<path d="M585 710H400V687" fill="none" stroke="#6a8274" stroke-width="1.8" marker-end="url(#arrow)"/>
+<rect x="632" y="754" width="336" height="171" rx="12" fill="#edf0f5" stroke="#cdd6df"/>
+<text x="652" y="790" class="heading" >Emotional state</text>
+<text x="652" y="826" class="body" >PAD + relationship dimensions</text>
+<text x="652" y="857" class="body muted" >Bounded updates + time decay</text>
+<text x="652" y="888" class="body muted" >Separate from user facts</text>
+<path d="M968 840H986V392" fill="none" stroke="#6a8274" stroke-width="1.8" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+<path d="M32 955H968" stroke="#d5ddd5"/>
+<text x="32" y="989" class="label muted" >DIFFERENT RETRIEVAL PATHS, DIFFERENT SCORES</text>
+<text x="32" y="1023" class="body" >Evidence: lexical + contextual vectors + note vectors → RRF, k = 40</text>
+<text x="32" y="1055" class="body" >Fact / episode archive: 0.60 relevance + 0.25 recency + 0.15 importance</text>
+<text x="32" y="1100" class="body" style="font-size:16px;fill:#5e6c65">Provider-dependent features are configurable. Full formulas and limits: docs/brain-flow.md</text>
+</svg>
